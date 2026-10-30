@@ -18,7 +18,8 @@ Danach im Browser öffnen:
 http://127.0.0.1:8093/play
 ```
 
-Algorithmus und Minimax-Schwierigkeit können direkt in der Oberfläche
+Die Oberfläche hat getrennte Tabs für das Live-Spiel und die Trainingsläufe.
+Algorithmus und Minimax-Schwierigkeit können direkt im Live-Spiel
 ausgewählt werden. Die Weboberfläche bietet die interaktiven Stufen 1 bis 6;
 höhere Tiefen können wegen der längeren Berechnung weiterhin über die
 Konsolen-Demo verwendet werden. Der Browser hält den Spielzustand; der Endpunkt

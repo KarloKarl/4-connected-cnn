@@ -17,6 +17,34 @@ main {
   text-align: center;
 }
 
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.tab {
+  border: 0;
+  border-bottom: 0.2rem solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tab.active {
+  border-bottom-color: #1854a5;
+  color: #1854a5;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
 .panel {
   margin: 1rem 0;
   padding: 1.25rem;

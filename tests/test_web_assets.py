@@ -15,6 +15,8 @@ class WebAssetTests(unittest.TestCase):
 
         self.assertIn("/web/assets/app.js", html)
         self.assertIn("/web/assets/styles.css", html)
+        self.assertIn('data-tab="live"', html)
+        self.assertIn('data-tab="training"', html)
 
 
 if __name__ == "__main__":

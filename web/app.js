@@ -9,6 +9,17 @@ let trainingSteps = [];
 let trainingStep = 0;
 let trainingTimer = null;
 
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((item) => {
+      item.classList.toggle("active", item === tab);
+    });
+    document.querySelectorAll(".tab-content").forEach((content) => {
+      content.classList.toggle("active", content.id === `${tab.dataset.tab}-tab`);
+    });
+  });
+});
+
 const boardElement = document.querySelector("#board");
 const messageElement = document.querySelector("#message");
 
@@ -123,6 +134,9 @@ async function loadTrainingGames(runId) {
   stopTrainingPlayback();
   trainingSteps = [];
   const response = await fetch(`/web/training/runs/${encodeURIComponent(runId)}/games`);
+  if (!response.ok) {
+    throw new Error(`Spiele-API antwortete mit HTTP ${response.status}`);
+  }
   trainingGames = await response.json();
   const gameSelect = document.querySelector("#training-game");
   gameSelect.replaceChildren();
@@ -145,6 +159,9 @@ async function loadTrainingGame(runId, index) {
   const response = await fetch(
     `/web/training/runs/${encodeURIComponent(runId)}/games/${index}`,
   );
+  if (!response.ok) {
+    throw new Error(`Spiel-API antwortete mit HTTP ${response.status}`);
+  }
   const result = await response.json();
   trainingSteps = result.steps;
   trainingStep = 0;
@@ -203,6 +220,9 @@ async function loadTrainingRuns() {
   const runSelect = document.querySelector("#training-run");
   try {
     const response = await fetch("/web/training/runs");
+    if (!response.ok) {
+      throw new Error(`Trainings-API antwortete mit HTTP ${response.status}`);
+    }
     const runs = await response.json();
     runSelect.replaceChildren();
     runs.forEach((run) => {

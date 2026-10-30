@@ -9,9 +9,14 @@
 <body>
   <main>
     <h1>Vier gewinnt</h1>
-    <section class="panel">
-      <h2>Live-Spiel</h2>
-      <section class="controls" aria-label="Spieleinstellungen">
+    <nav class="tabs" aria-label="Ansichten">
+      <button class="tab active" type="button" data-tab="live">Live-Spiel</button>
+      <button class="tab" type="button" data-tab="training">Trainingsläufe</button>
+    </nav>
+    <section id="live-tab" class="tab-content active">
+      <section class="panel">
+        <h2>Live-Spiel</h2>
+        <section class="controls" aria-label="Spieleinstellungen">
       <label>Algorithmus
         <select id="algorithm">
           <option value="minimax">Minimax</option>
@@ -26,12 +31,14 @@
         </select>
       </label>
       <button id="reset" type="button">Neues Spiel</button>
+        </section>
+        <p id="message" role="status">Du bist am Zug.</p>
+        <div id="board" class="board" aria-label="Spielfeld"></div>
       </section>
-      <p id="message" role="status">Du bist am Zug.</p>
-      <div id="board" class="board" aria-label="Spielfeld"></div>
     </section>
-    <section class="panel training-panel">
-      <h2>Trainingsläufe nachvollziehen</h2>
+    <section id="training-tab" class="tab-content">
+      <section class="panel training-panel">
+        <h2>Trainingsläufe nachvollziehen</h2>
       <div class="training-controls">
         <label>Trainingslauf
           <select id="training-run">
@@ -53,6 +60,7 @@
         <button id="training-play" type="button" disabled>Automatisch abspielen</button>
         <button id="training-next" type="button" disabled>Weiter</button>
       </div>
+      </section>
     </section>
   </main>
   <script src="/web/assets/app.js"></script>
