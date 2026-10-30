@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vier gewinnt</title>
+  <link rel="stylesheet" href="/web/styles.css">
+</head>
+<body>
+  <main>
+    <h1>Vier gewinnt</h1>
+    <section class="controls" aria-label="Spieleinstellungen">
+      <label>Algorithmus
+        <select id="algorithm">
+          <option value="minimax">Minimax</option>
+          <option value="random">Random</option>
+        </select>
+      </label>
+      <label>Schwierigkeit
+        <select id="difficulty">
+          <option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4" selected>4</option>
+          <option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option>
+        </select>
+      </label>
+      <button id="reset" type="button">Neues Spiel</button>
+    </section>
+    <p id="message" role="status">Du bist am Zug.</p>
+    <div id="board" class="board" aria-label="Spielfeld"></div>
+  </main>
+  <script src="/web/app.js"></script>
+</body>
+</html>
