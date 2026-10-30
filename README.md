@@ -98,11 +98,42 @@ Zugauswahl und Trainingsdatenerzeugung ab.
 
 ## Trainingsdaten
 
-`src/training/generate_dataset.py` erzeugt JSONL-Beispiele der Form:
+`src/training/generate_dataset.py` erzeugt Trainingsläufe der Form:
 
 ```text
-aktuelles Brett -> bester legaler Alpha-Beta-Minimax-Zug
+training/data/{Datum_Uhrzeit}/data.json
+training/data/{Datum_Uhrzeit}/config.json
 ```
+
+Beispiel für einen Lauf mit zufälliger Tiefe im Bereich 1 bis 5:
+
+```powershell
+$env:PYTHONPATH = "src"
+pipenv run python -m training.generate_dataset `
+  --games 1000 `
+  --min-depth 1 `
+  --max-depth 5 `
+  --distribution uniform `
+  --seed 42
+```
+
+Mögliche Verteilungen:
+
+- `uniform`: Jede Tiefe im Bereich ist gleich wahrscheinlich.
+- `bell`: Tiefen nahe der Mitte des Bereichs sind wahrscheinlicher.
+
+Der erste Zug jeder Partie ist standardmäßig zufällig und wird nicht als
+Minimax-Lehrerzug gespeichert. Das kann deaktiviert werden:
+
+```powershell
+pipenv run python -m training.generate_dataset --no-random-first-move
+```
+
+Mit `--seed` ist ein Lauf reproduzierbar. `config.json` enthält alle
+Erzeugungsparameter, den Erstellungszeitpunkt und die Anzahl der Beispiele.
+`data.json` enthält pro Beispiel das 42-Felder-Brett, legale Züge, den
+Minimax-Zug, den Spieler, die verwendete Tiefe und das Spielergebnis.
+Generierte Trainingsdaten werden durch `.gitignore` nicht versioniert.
 
 Das ist die Grundlage für ein späteres CNN oder ViT. Die historischen
 Notebook-/Datendateien unter `src/algos/` sind nicht Teil des Laufzeitpfads.
