@@ -99,11 +99,12 @@ function renderTrainingBoard() {
     return;
   }
   const step = trainingSteps[trainingStep];
-  const depthGrid = buildDepthGrid(trainingSteps, trainingStep);
+  const displayBoard = boardAfterStep(trainingSteps, trainingStep);
+  const depthGrid = buildDepthGrid(trainingSteps, trainingStep + 1);
   for (let row = rows - 1; row >= 0; row -= 1) {
     for (let column = 0; column < columns; column += 1) {
       const cell = document.createElement("div");
-      cell.className = `cell piece-${step.board[row * columns + column]}`;
+      cell.className = `cell piece-${displayBoard[row * columns + column]}`;
       if (column === step.move) {
         cell.classList.add("highlight");
       }
@@ -125,6 +126,23 @@ function renderTrainingBoard() {
   next.disabled = trainingStep === trainingSteps.length - 1;
   play.disabled = false;
   play.textContent = trainingTimer ? "Pause" : "Automatisch abspielen";
+}
+
+function boardAfterStep(steps, visibleStep) {
+  const step = steps[visibleStep];
+  if (visibleStep < steps.length - 1) {
+    return steps[visibleStep + 1].board;
+  }
+  const board = [...step.board];
+  const row = board.reduce(
+    (occupied, value, boardIndex) =>
+      occupied + (boardIndex % columns === step.move && value !== 0 ? 1 : 0),
+    0,
+  );
+  if (row < rows) {
+    board[row * columns + step.move] = step.player;
+  }
+  return board;
 }
 
 function formatOutcome(result) {
