@@ -4,7 +4,15 @@ from pathlib import Path
 
 import json
 
-from training.generate_dataset import main, generate_games, save_run, write_dataset, write_jsonl
+from training.generate_dataset import (
+    generate_and_save_run,
+    generate_games,
+    main,
+    save_run,
+    write_dataset,
+    write_dataset_stream,
+    write_jsonl,
+)
 
 
 class DatasetGeneratorTests(unittest.TestCase):
@@ -67,6 +75,7 @@ class DatasetGeneratorTests(unittest.TestCase):
                     "--distribution", "bell",
                     "--no-random-first-move",
                     "--seed", "7",
+                    "--batch-size", "2",
                     "--output-root", directory,
                     "--timestamp", "cli-test",
                 ]
@@ -76,6 +85,36 @@ class DatasetGeneratorTests(unittest.TestCase):
             self.assertFalse(config["random_first_move"])
             self.assertEqual(config["distribution"], "bell")
             self.assertEqual(config["seed"], 7)
+            self.assertEqual(config["batch_size"], 2)
+
+    def test_stream_writer_creates_valid_json_in_batches(self):
+        examples = iter({"index": index} for index in range(5))
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "data.json"
+            count = write_dataset_stream(examples, output, batch_size=2)
+
+            self.assertEqual(count, 5)
+            self.assertEqual(json.loads(output.read_text(encoding="utf-8"))[4]["index"], 4)
+
+    def test_streaming_run_persists_completed_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = generate_and_save_run(
+                {
+                    "game_count": 1,
+                    "min_depth": 1,
+                    "max_depth": 1,
+                    "distribution": "uniform",
+                    "random_first_move": True,
+                    "seed": 1,
+                    "batch_size": 1,
+                },
+                Path(directory),
+                "streaming-test",
+            )
+            config = json.loads((run_directory / "config.json").read_text(encoding="utf-8"))
+
+            self.assertEqual(config["status"], "completed")
+            self.assertGreater(config["example_count"], 0)
 
 
 if __name__ == "__main__":

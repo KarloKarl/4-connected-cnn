@@ -114,8 +114,17 @@ pipenv run python -m training.generate_dataset `
   --min-depth 1 `
   --max-depth 5 `
   --distribution uniform `
+  --batch-size 100 `
   --seed 42
 ```
+
+Die Ergebnisse werden während der Erzeugung direkt in `data.json` geschrieben
+und standardmäßig alle 100 Beispiele mit `flush()` auf die Festplatte
+übertragen. Die Batchgröße kann mit `--batch-size` angepasst werden. Dadurch
+bleibt der Speicherverbrauch unabhängig von der Gesamtgröße des Datensatzes.
+Während eines laufenden oder abgebrochenen Prozesses ist das JSON-Array noch
+nicht zwingend syntaktisch abgeschlossen; nach einem erfolgreichen Lauf ist
+`data.json` gültiges JSON und `config.json` erhält den Status `completed`.
 
 Mögliche Verteilungen:
 
