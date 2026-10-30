@@ -241,6 +241,7 @@ async function loadTrainingGame(runId, index) {
     trainingSteps,
     result.difficulty_distribution,
     result.config,
+    result.difficulty_distribution_by_player,
   );
   renderTrainingBoard();
 }
@@ -254,8 +255,6 @@ function renderTrainingConfig(config) {
     ["Schwierigkeitsmodus", config.difficulty_mode === "asymmetric" ? "Asymmetrisch" : "Symmetrisch"],
     ["Spiele", config.game_count],
     ["Beispiele", config.example_count],
-    ["Tiefenbereich", `${config.min_depth} bis ${config.max_depth}`],
-    ["Verteilung", config.distribution],
     ["Erster Zug zufällig", config.random_first_move ? "Ja" : "Nein"],
     ["Batchgröße", config.batch_size],
     ["Seed", config.seed ?? "-"],
@@ -266,6 +265,11 @@ function renderTrainingConfig(config) {
       ["Spieler 1 Verteilung", config.player_one_distribution],
       ["Spieler -1 Tiefe", `${config.player_minus_one_min_depth} bis ${config.player_minus_one_max_depth}`],
       ["Spieler -1 Verteilung", config.player_minus_one_distribution],
+    );
+  } else {
+    fields.splice(5, 0,
+      ["Tiefenbereich", `${config.min_depth} bis ${config.max_depth}`],
+      ["Verteilung", config.distribution],
     );
   }
   const table = document.createElement("table");
@@ -288,11 +292,61 @@ function renderTrainingConfig(config) {
   element.appendChild(table);
 }
 
-function renderDifficultyDistribution(gameSteps, runDistribution, config) {
+function renderDifficultyDistribution(
+  gameSteps,
+  runDistribution,
+  config,
+  runDistributionByPlayer,
+) {
   const element = document.querySelector("#training-distribution");
   element.replaceChildren();
-  const minimum = Number(config.min_depth);
-  const maximum = Number(config.max_depth);
+  const players = config.difficulty_mode === "asymmetric" ? [1, -1] : [null];
+  players.forEach((player) => {
+    const chart = document.createElement("section");
+    chart.className = "distribution-chart";
+    const title = document.createElement("h3");
+    title.textContent = player === null
+      ? "Schwierigkeitsverteilung der Züge"
+      : `Schwierigkeitsverteilung Spieler ${player}`;
+    chart.appendChild(title);
+    const playerConfig = player === 1
+      ? {
+          min_depth: config.player_one_min_depth,
+          max_depth: config.player_one_max_depth,
+        }
+      : player === -1
+        ? {
+            min_depth: config.player_minus_one_min_depth,
+            max_depth: config.player_minus_one_max_depth,
+          }
+        : config;
+    const minimum = Number(playerConfig.min_depth);
+    const maximum = Number(playerConfig.max_depth);
+    const selectedSteps = player === null
+      ? gameSteps
+      : gameSteps.filter((step) => Number(step.player) === player);
+    const playerRunDistribution = player === null
+      ? runDistribution
+      : (runDistributionByPlayer?.[String(player)] || {});
+    appendDifficultyChart(
+      chart,
+      selectedSteps,
+      playerRunDistribution,
+      minimum,
+      maximum,
+      player === null ? "Schwierigkeitsverteilung der Züge" : `Spieler ${player}`,
+    );
+    element.appendChild(chart);
+  });
+}
+
+function appendDifficultyChart(
+  element,
+  gameSteps,
+  runDistribution,
+  minimum,
+  maximum,
+) {
   const depths = Array.from(
     { length: maximum - minimum + 1 },
     (_, index) => minimum + index,
@@ -336,12 +390,6 @@ function renderDifficultyDistribution(gameSteps, runDistribution, config) {
     "aria-label",
     "Verteilung der Minimax-Suchtiefen im gewählten Spiel und Trainingslauf",
   );
-  const title = document.createElementNS(svg.namespaceURI, "text");
-  title.setAttribute("x", "52");
-  title.setAttribute("y", "20");
-  title.setAttribute("font-weight", "600");
-  title.textContent = "Schwierigkeitsverteilung der Züge";
-  svg.appendChild(title);
   renderDistributionBars(
     svg,
     selectedCounts,

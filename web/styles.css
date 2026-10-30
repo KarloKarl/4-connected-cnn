@@ -307,6 +307,12 @@ select, button {
   max-width: 42rem;
 }
 
+.distribution-chart h3 {
+  margin: 1rem 0 0.25rem;
+  color: #172033;
+  font-size: 1rem;
+}
+
 .distribution svg {
   display: block;
   width: 100%;

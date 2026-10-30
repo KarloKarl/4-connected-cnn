@@ -48,10 +48,27 @@ def load_run(run_directory: Path) -> Dict:
     difficulty_counts = Counter(
         str(example["depth"]) for example in examples if "depth" in example
     )
+    player_difficulty_counts = {
+        str(player): dict(
+            sorted(
+                (
+                    (str(depth), count)
+                    for depth, count in Counter(
+                        example["depth"]
+                        for example in examples
+                        if "depth" in example and int(example.get("player", 0)) == player
+                    ).items()
+                ),
+                key=lambda item: int(item[0]),
+            )
+        )
+        for player in (-1, 1)
+    }
     return {
         "config": config,
         "games": games,
         "difficulty_distribution": dict(
             sorted(difficulty_counts.items(), key=lambda item: int(item[0]))
         ),
+        "difficulty_distribution_by_player": player_difficulty_counts,
     }
