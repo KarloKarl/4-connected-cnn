@@ -97,6 +97,7 @@ class WebMoveResponse(BaseModel):
 
 
 class TrainingRunRequest(BaseModel):
+    name: str = Field(default="Trainingslauf", min_length=1, max_length=80)
     game_count: int = Field(default=10, ge=1, le=10000)
     min_depth: int = Field(default=1, ge=1, le=8)
     max_depth: int = Field(default=5, ge=1, le=8)
@@ -148,6 +149,9 @@ async def start_training_run(request: TrainingRunRequest) -> Dict:
             status_code=422,
             detail="max_depth muss mindestens min_depth entsprechen",
         )
+    name = request.name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="name darf nicht leer sein")
     if any(not future.done() for future in TRAINING_JOBS.values()):
         raise HTTPException(
             status_code=409,
@@ -155,6 +159,7 @@ async def start_training_run(request: TrainingRunRequest) -> Dict:
         )
     run_id = datetime.now().astimezone().strftime("%Y%m%d_%H%M%S_%f")
     config = request.dict()
+    config["name"] = name
     future = TRAINING_EXECUTOR.submit(generate_training_run, run_id, config)
     TRAINING_JOBS[run_id] = future
     return {"id": run_id, "status": "running", "config": config}
@@ -188,6 +193,7 @@ async def training_runs() -> List[Dict]:
             continue
         runs.append({
             "id": directory.name,
+            "name": config.get("name", directory.name),
             "config": config,
             "game_count": len(games),
             "example_count": config.get("example_count", 0),

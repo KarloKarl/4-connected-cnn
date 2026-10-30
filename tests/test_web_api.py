@@ -8,6 +8,12 @@ from main import TrainingRunRequest, WebMoveRequest, start_training_run, web_mov
 
 
 class WebApiTests(unittest.TestCase):
+    def test_training_run_name_accepts_bounded_text(self):
+        request = TrainingRunRequest(name="  Mein Lauf  ")
+
+        self.assertEqual(request.name, "  Mein Lauf  ")
+        self.assertLessEqual(len(request.name), 80)
+
     def test_training_run_rejects_invalid_depth_range(self):
         with self.assertRaises(HTTPException) as context:
             asyncio.run(start_training_run(

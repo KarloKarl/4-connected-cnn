@@ -235,6 +235,7 @@ function renderTrainingConfig(config) {
   const element = document.querySelector("#training-config");
   element.replaceChildren();
   const fields = [
+    ["Name", config.name ?? "-"],
     ["Status", config.status],
     ["Spiele", config.game_count],
     ["Beispiele", config.example_count],
@@ -459,7 +460,7 @@ async function loadTrainingRuns() {
     runs.forEach((run) => {
       const option = document.createElement("option");
       option.value = run.id;
-      option.textContent = `${run.id} (${run.game_count} Spiele, ${run.example_count} Beispiele)`;
+        option.textContent = `${run.name || run.id} · ${run.id} (${run.game_count} Spiele, ${run.example_count} Beispiele)`;
       runSelect.appendChild(option);
     });
     if (runs.length) {
@@ -486,6 +487,7 @@ async function startTrainingRun(event) {
   const status = document.querySelector("#training-job-status");
   const seed = trainingFormValue("training-seed");
   const payload = {
+    name: trainingFormValue("training-name").trim(),
     game_count: Number(trainingFormValue("training-games")),
     min_depth: Number(trainingFormValue("training-min-depth")),
     max_depth: Number(trainingFormValue("training-max-depth")),
