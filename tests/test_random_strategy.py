@@ -1,6 +1,6 @@
 import unittest
 
-from algos.Random import RandomStrategy
+from algos.random_strategy import RandomStrategy
 from connect_four import COLUMNS, PLAYER_ONE, PLAYER_TWO, ROWS, GameState
 
 
