@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+__pycache__
+*.py[cod]
+data/training
+tests
+*.ipynb
+*.pdf
+*.jpg
+ToDo.md
+logging_data.log
