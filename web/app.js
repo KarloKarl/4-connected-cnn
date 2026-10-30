@@ -120,11 +120,18 @@ function renderTrainingBoard() {
   }
   status.textContent = `Schritt ${trainingStep + 1} von ${trainingSteps.length} | ` +
     `Lehrzug: Spalte ${step.move + 1} | Spieler: ${step.player} | ` +
-    `Tiefe: ${step.depth} | Ergebnis: ${step.result}`;
+    `Tiefe: ${step.depth} | Partieausgang nach Abschluss: ${formatOutcome(step.result)}`;
   previous.disabled = trainingStep === 0;
   next.disabled = trainingStep === trainingSteps.length - 1;
   play.disabled = false;
   play.textContent = trainingTimer ? "Pause" : "Automatisch abspielen";
+}
+
+function formatOutcome(result) {
+  if (result === 0) {
+    return "Unentschieden";
+  }
+  return `Spieler ${result} gewinnt`;
 }
 
 function buildDepthGrid(steps, visibleStep) {

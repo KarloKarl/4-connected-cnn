@@ -39,6 +39,9 @@ normalisiert und über getrennte Prozent-Y-Achsen dargestellt.
 Die Trainingssteine zeigen zusätzlich die Minimax-Tiefe des jeweiligen Zuges;
 die zufällige Eröffnung bleibt ohne Tiefenmarkierung. In der Spielauswahl wird
 das Ergebnis jeder Partie einschließlich Unentschieden angezeigt.
+Der Trainingsschritt zeigt den Brettzustand vor dem Lehrzug. Der angezeigte
+Partieausgang bezieht sich deshalb auf die abgeschlossene Partie und muss am
+letzten sichtbaren Vor-Zug nicht bereits als Viererreihe erkennbar sein.
 
 ## Lokales Spiel
 
