@@ -4,7 +4,7 @@ import json
 import random
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Sequence, Union
 
 from algos.minimax_strategy import MinimaxStrategy
 from connect_four import GameState
@@ -117,3 +117,48 @@ def save_run(
         encoding="utf-8",
     )
     return run_directory
+
+
+def main(arguments: Optional[Sequence[str]] = None) -> Path:
+    """Generate and persist one dataset run from command-line arguments."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--games", type=int, default=100)
+    parser.add_argument("--min-depth", type=int, default=1)
+    parser.add_argument("--max-depth", type=int, default=5)
+    parser.add_argument("--distribution", choices=("uniform", "bell"), default="uniform")
+    parser.add_argument(
+        "--random-first-move",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="randomize each game's opening move (default: enabled)",
+    )
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--output-root", type=Path, default=Path("training/data"))
+    parser.add_argument("--timestamp", default=None, help="override the output directory name")
+    args = parser.parse_args(arguments)
+
+    config = {
+        "game_count": args.games,
+        "min_depth": args.min_depth,
+        "max_depth": args.max_depth,
+        "distribution": args.distribution,
+        "random_first_move": args.random_first_move,
+        "seed": args.seed,
+    }
+    examples = generate_games(
+        game_count=args.games,
+        min_depth=args.min_depth,
+        max_depth=args.max_depth,
+        distribution=args.distribution,
+        random_first_move=args.random_first_move,
+        seed=args.seed,
+    )
+    run_directory = save_run(examples, config, args.output_root, args.timestamp)
+    print(f"Saved {len(examples)} examples to {run_directory}")
+    return run_directory
+
+
+if __name__ == "__main__":
+    main()

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import json
 
-from training.generate_dataset import generate_games, save_run, write_dataset, write_jsonl
+from training.generate_dataset import main, generate_games, save_run, write_dataset, write_jsonl
 
 
 class DatasetGeneratorTests(unittest.TestCase):
@@ -56,6 +56,26 @@ class DatasetGeneratorTests(unittest.TestCase):
             config = json.loads((run_directory / "config.json").read_text(encoding="utf-8"))
             self.assertEqual(config["example_count"], 1)
             self.assertIn("created_at", config)
+
+    def test_cli_saves_requested_configuration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = main(
+                [
+                    "--games", "1",
+                    "--min-depth", "1",
+                    "--max-depth", "2",
+                    "--distribution", "bell",
+                    "--no-random-first-move",
+                    "--seed", "7",
+                    "--output-root", directory,
+                    "--timestamp", "cli-test",
+                ]
+            )
+            config = json.loads((run_directory / "config.json").read_text(encoding="utf-8"))
+
+            self.assertFalse(config["random_first_move"])
+            self.assertEqual(config["distribution"], "bell")
+            self.assertEqual(config["seed"], 7)
 
 
 if __name__ == "__main__":
