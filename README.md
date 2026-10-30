@@ -53,7 +53,9 @@ Status anschließend im Browser angezeigt.
 Der Schwierigkeitsmodus kann symmetrisch (eine gemeinsame Konfiguration für
 beide Spieler) oder asymmetrisch gewählt werden. Im asymmetrischen Modus
 werden Min-/Max-Tiefe und Verteilung für Spieler 1 und Spieler -1 getrennt
-festgelegt.
+festgelegt. Die Konfigurationstabelle zeigt diese Werte getrennt; die
+Schwierigkeitsverteilung wird in zwei Diagrammen, jeweils einem pro Spieler,
+dargestellt.
 Die Konfiguration eines ausgewählten Laufs wird im Untertab „Nachvollziehen“
 tabellarisch dargestellt.
 
