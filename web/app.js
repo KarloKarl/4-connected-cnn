@@ -221,21 +221,22 @@ function renderDifficultyDistribution(gameSteps, runDistribution, config) {
   title.textContent = "Schwierigkeitsverteilung";
   svg.appendChild(title);
   renderDistributionPlot(
-    svg, "Gewähltes Spiel", "Schritte", selectedCounts, depths, x, y, 35, "#eb5757",
+    svg, "Gewähltes Spiel", "Schritte", selectedCounts, depths, x, y, 35,
   );
   renderDistributionPlot(
-    svg, "Gesamter Trainingslauf", "Partien", runCounts, depths, x, y, 160, "#4a90e2",
+    svg, "Gesamter Trainingslauf", "Partien", runCounts, depths, x, y, 160,
   );
   element.appendChild(svg);
 }
 
-function renderDistributionPlot(svg, label, unit, counts, depths, x, y, top, color) {
+function renderDistributionPlot(svg, label, unit, counts, depths, x, y, top) {
   const namespace = svg.namespaceURI;
+  const baselineY = top + 102;
   const baseline = document.createElementNS(namespace, "line");
   baseline.setAttribute("x1", "52");
   baseline.setAttribute("x2", "620");
-  baseline.setAttribute("y1", String(top + 102));
-  baseline.setAttribute("y2", String(top + 102));
+  baseline.setAttribute("y1", String(baselineY));
+  baseline.setAttribute("y2", String(baselineY));
   baseline.setAttribute("stroke", "#9aa7b8");
   svg.appendChild(baseline);
   const heading = document.createElementNS(namespace, "text");
@@ -244,28 +245,38 @@ function renderDistributionPlot(svg, label, unit, counts, depths, x, y, top, col
   heading.setAttribute("font-size", "13");
   heading.textContent = `${label} (Anzahl ${unit})`;
   svg.appendChild(heading);
-  const points = depths.map((depth, index) => `${x(index)},${y(counts[depth], top + 20)}`).join(" ");
-  const line = document.createElementNS(namespace, "polyline");
-  line.setAttribute("points", points);
-  line.setAttribute("fill", "none");
-  line.setAttribute("stroke", color);
-  line.setAttribute("stroke-width", "3");
-  line.setAttribute("stroke-linejoin", "round");
-  svg.appendChild(line);
+  const colors = ["#08a900", "#58c700", "#d9df00", "#efb647", "#e7b29d"];
+  const points = depths.map((depth, index) => ({
+    x: x(index),
+    y: y(counts[depth], top + 20),
+  }));
+  points.slice(0, -1).forEach((point, index) => {
+    const next = points[index + 1];
+    const middle = (point.x + next.x) / 2;
+    const path = document.createElementNS(namespace, "path");
+    path.setAttribute(
+      "d",
+      [
+        `M ${point.x} ${baselineY}`,
+        `L ${point.x} ${point.y}`,
+        `Q ${middle} ${(point.y + next.y) / 2 - 8} ${next.x} ${next.y}`,
+        `L ${next.x} ${baselineY}`,
+        "Z",
+      ].join(" "),
+    );
+    path.setAttribute("fill", colors[index % colors.length]);
+    path.setAttribute("stroke", colors[index % colors.length]);
+    path.setAttribute("stroke-width", "1");
+    path.setAttribute("aria-label", `${label}, Tiefe ${depths[index]}`);
+    svg.appendChild(path);
+  });
   depths.forEach((depth, index) => {
-    const point = document.createElementNS(namespace, "circle");
-    point.setAttribute("cx", String(x(index)));
-    point.setAttribute("cy", String(y(counts[depth], top + 20)));
-    point.setAttribute("r", "5");
-    point.setAttribute("fill", color);
-    point.setAttribute("aria-label", `Tiefe ${depth}: ${counts[depth]}`);
-    svg.appendChild(point);
     const axisLabel = document.createElementNS(namespace, "text");
     axisLabel.setAttribute("x", String(x(index)));
     axisLabel.setAttribute("y", String(top + 120));
     axisLabel.setAttribute("text-anchor", "middle");
     axisLabel.setAttribute("font-size", "12");
-    axisLabel.textContent = depth;
+    axisLabel.textContent = `Tiefe ${depth}`;
     svg.appendChild(axisLabel);
   });
 }
