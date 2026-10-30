@@ -25,6 +25,13 @@ Konsolen-Demo verwendet werden. Der Browser hält den Spielzustand; der Endpunkt
 `POST /web/move` validiert den menschlichen Zug und berechnet den KI-Zug.
 Die Browserdemo ist getrennt vom Hardware-Endpunkt `POST /updateBoard`.
 
+Unterhalb des Live-Spiels gibt es ein Trainingspanel. Dort können vorhandene
+Läufe ausgewählt, ihre vollständige `config.json` eingesehen und einzelne
+Spiele Schritt für Schritt oder automatisch abgespielt werden. Ein Schritt
+zeigt das gespeicherte spielerrelative Brett, den Minimax-Lehrzug, Spieler,
+Tiefe und das Ergebnis der Partie. Ältere Läufe ohne `game`-/`step`-Metadaten
+werden weiterhin automatisch anhand ihrer Brettfolge gruppiert.
+
 ## Lokales Spiel
 
 Mit Pipenv:
@@ -143,6 +150,10 @@ Erzeugungsparameter, den Erstellungszeitpunkt und die Anzahl der Beispiele.
 `data.json` enthält pro Beispiel das 42-Felder-Brett, legale Züge, den
 Minimax-Zug, den Spieler, die verwendete Tiefe und das Spielergebnis.
 Generierte Trainingsdaten werden durch `.gitignore` nicht versioniert.
+
+Die Browseransicht liest Läufe über `GET /web/training/runs`; die Spiele und
+Schritte werden über `/web/training/runs/{run_id}/games` und
+`/web/training/runs/{run_id}/games/{game_index}` geladen.
 
 Das ist die Grundlage für ein späteres CNN oder ViT. Die historischen
 Notebook-/Datendateien unter `src/algos/` sind nicht Teil des Laufzeitpfads.

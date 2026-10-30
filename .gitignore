@@ -28,3 +28,4 @@ __pycache__/
 .pytest_cache/
 logging_data.log
 training/data/
+data/training/

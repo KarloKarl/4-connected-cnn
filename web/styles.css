@@ -13,8 +13,20 @@ body {
 }
 
 main {
-  width: min(94vw, 560px);
+  width: min(94vw, 900px);
   text-align: center;
+}
+
+.panel {
+  margin: 1rem 0;
+  padding: 1.25rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.15rem 0.5rem #17203318;
+}
+
+h2 {
+  margin-top: 0;
 }
 
 .controls {
@@ -38,6 +50,8 @@ select, button {
 }
 
 .board {
+  width: min(100%, 560px);
+  margin: 1rem auto 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.45rem;
@@ -56,3 +70,30 @@ select, button {
 
 .cell.piece-1 { background: #f2c94c; }
 .cell.piece--1 { background: #eb5757; }
+
+.cell.highlight {
+  outline: 0.2rem solid #172033;
+  outline-offset: 0.1rem;
+}
+
+.training-controls, .training-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: end;
+}
+
+.config {
+  max-width: 100%;
+  margin: 1rem auto;
+  padding: 0.75rem;
+  overflow: auto;
+  text-align: left;
+  background: #eef2f7;
+  border-radius: 0.4rem;
+}
+
+.training-board {
+  background: #315f9f;
+}

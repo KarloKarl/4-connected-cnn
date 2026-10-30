@@ -53,7 +53,7 @@ def iter_game_examples(
         max_depth = min_depth
 
     rng = random.Random(seed)
-    for _ in range(game_count):
+    for game_index in range(game_count):
         state = GameState.initial()
         depth = choose_depth(min_depth, max_depth, distribution, rng)
         if random_first_move:
@@ -75,7 +75,9 @@ def iter_game_examples(
             state = state.drop_piece(move)
 
         result = state.winner() or 0
-        for example in game_examples:
+        for step, example in enumerate(game_examples):
+            example["game"] = game_index
+            example["step"] = step
             example["result"] = result
             yield example
 
@@ -145,7 +147,7 @@ def write_dataset_stream(
 def save_run(
     examples: List[Dict],
     config: Dict[str, Union[str, int, bool]],
-    output_root: Path = Path("training/data"),
+    output_root: Path = Path("data/training"),
     timestamp: Optional[str] = None,
 ) -> Path:
     """Save one generation run and its exact configuration."""
@@ -168,7 +170,7 @@ def save_run(
 
 def generate_and_save_run(
     config: Dict[str, Union[str, int, bool]],
-    output_root: Path = Path("training/data"),
+    output_root: Path = Path("data/training"),
     timestamp: Optional[str] = None,
 ) -> Path:
     """Generate one run directly to disk without retaining all examples."""
@@ -219,7 +221,7 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
     )
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=100)
-    parser.add_argument("--output-root", type=Path, default=Path("training/data"))
+    parser.add_argument("--output-root", type=Path, default=Path("data/training"))
     parser.add_argument("--timestamp", default=None, help="override the output directory name")
     args = parser.parse_args(arguments)
 

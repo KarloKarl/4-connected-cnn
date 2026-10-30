@@ -1,5 +1,6 @@
+import json
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 import requests
 import uvicorn
@@ -12,6 +13,7 @@ from algos.minimax_strategy import MinimaxStrategy
 from board_adapter import api_move, state_from_api_rows
 from connect_four import COLUMNS, PLAYER_ONE, PLAYER_TWO, ROWS, GameState
 from strategies import create_strategy
+from training.viewer import load_json, load_run
 
 import logging
 
@@ -69,6 +71,7 @@ class Board(BaseModel):
 app = FastAPI()
 WEB_INDEX = Path(__file__).resolve().parent.parent / "web" / "index.html"
 WEB_ASSETS = Path(__file__).resolve().parent.parent / "web"
+TRAINING_ROOT = WEB_ASSETS.parent / "data" / "training"
 app.mount("/web/assets", StaticFiles(directory=WEB_ASSETS), name="web-assets")
 
 
@@ -91,6 +94,65 @@ class WebMoveResponse(BaseModel):
 @app.get("/play")
 async def web_game():
     return FileResponse(WEB_INDEX)
+
+
+def training_run_directory(run_id: str) -> Path:
+    """Resolve a run ID without allowing access outside the training root."""
+    if not run_id or Path(run_id).name != run_id:
+        raise HTTPException(status_code=404, detail="training run not found")
+    directory = TRAINING_ROOT / run_id
+    if not directory.is_dir():
+        raise HTTPException(status_code=404, detail="training run not found")
+    return directory
+
+
+@app.get("/web/training/runs")
+async def training_runs() -> List[Dict]:
+    if not TRAINING_ROOT.is_dir():
+        return []
+    runs = []
+    for directory in sorted(TRAINING_ROOT.iterdir(), reverse=True):
+        if not directory.is_dir():
+            continue
+        try:
+            config = load_json(directory / "config.json")
+            games = load_run(directory)["games"]
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+        runs.append({
+            "id": directory.name,
+            "config": config,
+            "game_count": len(games),
+            "example_count": config.get("example_count", 0),
+        })
+    return runs
+
+
+@app.get("/web/training/runs/{run_id}/games")
+async def training_run_games(run_id: str) -> List[Dict]:
+    run = load_run(training_run_directory(run_id))
+    return [
+        {
+            "index": index,
+            "step_count": len(game),
+            "result": game[0].get("result", 0) if game else 0,
+            "depth": game[0].get("depth"),
+        }
+        for index, game in enumerate(run["games"])
+    ]
+
+
+@app.get("/web/training/runs/{run_id}/games/{game_index}")
+async def training_game(run_id: str, game_index: int) -> Dict:
+    run = load_run(training_run_directory(run_id))
+    games = run["games"]
+    if game_index < 0 or game_index >= len(games):
+        raise HTTPException(status_code=404, detail="training game not found")
+    return {
+        "config": run["config"],
+        "game_index": game_index,
+        "steps": games[game_index],
+    }
 
 
 @app.post("/web/move", response_model=WebMoveResponse)
