@@ -165,23 +165,22 @@ async function loadTrainingGame(runId, index) {
   const result = await response.json();
   trainingSteps = result.steps;
   trainingStep = 0;
-  renderTrainingConfig(result.config, trainingSteps[0]?.depth);
+  renderTrainingConfig(result.config);
   renderDifficultyDistribution(
-    trainingSteps[0]?.depth,
-    result.game_difficulty_distribution,
+    trainingSteps,
+    result.difficulty_distribution,
     result.config,
   );
   renderTrainingBoard();
 }
 
-function renderTrainingConfig(config, selectedDepth) {
+function renderTrainingConfig(config) {
   const element = document.querySelector("#training-config");
   element.replaceChildren();
   const fields = [
     ["Status", config.status],
     ["Spiele", config.game_count],
     ["Beispiele", config.example_count],
-    ["Tiefe Spiel", selectedDepth ?? "-"],
     ["Tiefenbereich", `${config.min_depth} bis ${config.max_depth}`],
     ["Verteilung", config.distribution],
     ["Erster Zug zufällig", config.random_first_move ? "Ja" : "Nein"],
@@ -201,7 +200,7 @@ function renderTrainingConfig(config, selectedDepth) {
   });
 }
 
-function renderDifficultyDistribution(selectedDepth, runDistribution, config) {
+function renderDifficultyDistribution(gameSteps, runDistribution, config) {
   const element = document.querySelector("#training-distribution");
   element.replaceChildren();
   const minimum = Number(config.min_depth);
@@ -214,9 +213,10 @@ function renderDifficultyDistribution(selectedDepth, runDistribution, config) {
     element.textContent = "Keine Schwierigkeitsdaten vorhanden.";
     return;
   }
-  const selectedCounts = Object.fromEntries(
-    depths.map((depth) => [depth, depth === Number(selectedDepth) ? 1 : 0]),
-  );
+  const selectedCounts = Object.fromEntries(depths.map((depth) => [depth, 0]));
+  gameSteps.forEach((step) => {
+    selectedCounts[step.depth] = (selectedCounts[step.depth] || 0) + 1;
+  });
   const runCounts = Object.fromEntries(
     depths.map((depth) => [depth, Number(runDistribution[String(depth)] || 0)]),
   );
@@ -246,7 +246,7 @@ function renderDifficultyDistribution(selectedDepth, runDistribution, config) {
   title.textContent = "Schwierigkeitsverteilung";
   svg.appendChild(title);
   renderDistributionPlot(
-    svg, "Tiefe Spiel", "Partie", selectedCounts, depths, x, y, 35,
+    svg, "Tiefe Spiel", "Züge", selectedCounts, depths, x, y, 35,
   );
   renderDistributionPlot(
     svg, "Tiefe Training", "Partien", runCounts, depths, x, y, 160,

@@ -33,7 +33,8 @@ zeigt das gespeicherte spielerrelative Brett, den Minimax-Lehrzug, Spieler,
 Tiefe und das Ergebnis der Partie. Ältere Läufe ohne `game`-/`step`-Metadaten
 werden weiterhin automatisch anhand ihrer Brettfolge gruppiert. Zusätzlich
 zeigt das Panel eine gemeinsame Chart-Ansicht: oben die Schwierigkeitsverteilung
-des gewählten Spiels, darunter die Verteilung des gesamten Trainingslaufs.
+der Züge im gewählten Spiel, darunter die Verteilung aller Züge des gesamten
+Trainingslaufs.
 
 ## Lokales Spiel
 
@@ -151,7 +152,11 @@ pipenv run python -m training.generate_dataset --no-random-first-move
 Mit `--seed` ist ein Lauf reproduzierbar. `config.json` enthält alle
 Erzeugungsparameter, den Erstellungszeitpunkt und die Anzahl der Beispiele.
 `data.json` enthält pro Beispiel das 42-Felder-Brett, legale Züge, den
-Minimax-Zug, den Spieler, die verwendete Tiefe und das Spielergebnis.
+Minimax-Zug, den Spieler, die für diesen Zug gezogene Tiefe und das
+Spielergebnis. Die Minimax-Tiefe wird für jeden Zug neu aus der konfigurierten
+Verteilung gezogen, nicht einmalig pro Partie. Bereits vorhandene Läufe
+wurden noch mit der früheren Partie-Logik erzeugt und müssen für eine
+per-Zug-Verteilung neu generiert werden.
 Generierte Trainingsdaten werden durch `.gitignore` nicht versioniert.
 
 Die Browseransicht liest Läufe über `GET /web/training/runs`; die Spiele und
