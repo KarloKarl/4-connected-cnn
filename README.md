@@ -1,8 +1,27 @@
 # Connect-Four-Spielalgorithmus
 
 Der Dienst berechnet Züge für ein 6x7-Connect-Four-Brett. Zusätzlich gibt
-es einen lokalen Terminal-Demonstrator, in dem Mensch gegen Random oder
-Alpha-Beta-Minimax spielen kann.
+es lokale und browserbasierte Demonstratoren, in denen Mensch gegen Random
+oder Alpha-Beta-Minimax spielen kann.
+
+## Browser-Spiel
+
+Server starten:
+
+```powershell
+pipenv run uvicorn main:app --app-dir src --host 127.0.0.1 --port 8093
+```
+
+Danach im Browser öffnen:
+
+```text
+http://127.0.0.1:8093/play
+```
+
+Algorithmus und Minimax-Schwierigkeit können direkt in der Oberfläche
+ausgewählt werden. Der Browser hält den Spielzustand; der Endpunkt
+`POST /web/move` validiert den menschlichen Zug und berechnet den KI-Zug.
+Die Browserdemo ist getrennt vom Hardware-Endpunkt `POST /updateBoard`.
 
 ## Lokales Spiel
 
