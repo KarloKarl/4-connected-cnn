@@ -15,16 +15,39 @@ pipenv run uvicorn main:app --app-dir src --host 127.0.0.1 --port 8094
 
 Anschließend [http://127.0.0.1:8094/play](http://127.0.0.1:8094/play) öffnen.
 
-### Docker
+### Dockerfile bauen
 
 ```powershell
 docker build -t connect-four .
 docker run --rm -p 8094:8094 -v "${PWD}/data:/app/data" connect-four
 ```
 
-Anschließend [http://localhost:8094/play](http://localhost:8094/play) öffnen.
-Die Pipenv-Abhängigkeiten werden beim Image-Build aus `Pipfile.lock`
-installiert. Das Volume hält erzeugte Datensätze außerhalb des Containers.
+Das Image installiert die Pipenv-Abhängigkeiten aus `Pipfile.lock` und startet
+den Webservice auf Port 8094. Datensätze bleiben durch das Volume erhalten.
+
+### Docker Compose
+
+Mit einer `compose.yaml` im Projektverzeichnis:
+
+```yaml
+services:
+  connect-four:
+    build: .
+    ports:
+      - "8094:8094"
+    volumes:
+      - ./data:/app/data
+```
+
+Starten und beenden:
+
+```powershell
+docker compose up --build
+docker compose down
+```
+
+Die Webapp ist anschließend unter
+[http://localhost:8094/play](http://localhost:8094/play) erreichbar.
 
 Die Webapp bietet:
 
