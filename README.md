@@ -1,3 +1,5 @@
+> **Transparenzhinweis:** Ab Commit [`e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec`](https://github.com/KarloKarl/4-connected-cnn/commit/e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec) wurde bei Entwicklung, Überarbeitung und Dokumentation dieses Projekts KI eingesetzt. Die Ergebnisse wurden von den Projektverantwortlichen geprüft und verantwortet.
+
 # Connect-Four-Spielalgorithmus
 
 Der Dienst berechnet Züge für ein 6x7-Connect-Four-Brett. Zusätzlich gibt
