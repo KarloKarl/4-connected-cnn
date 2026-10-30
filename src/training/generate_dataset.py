@@ -2,8 +2,9 @@
 
 import json
 import random
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Union
 
 from algos.minimax_strategy import MinimaxStrategy
 from connect_four import GameState
@@ -92,3 +93,27 @@ def write_dataset(examples: List[Dict], output: Path) -> None:
     """Write the complete dataset as a JSON array."""
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(examples, indent=2) + "\n", encoding="utf-8")
+
+
+def save_run(
+    examples: List[Dict],
+    config: Dict[str, Union[str, int, bool]],
+    output_root: Path = Path("training/data"),
+    timestamp: Optional[str] = None,
+) -> Path:
+    """Save one generation run and its exact configuration."""
+    run_name = timestamp or datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")
+    run_directory = output_root / run_name
+    if run_directory.exists():
+        raise FileExistsError(f"dataset directory already exists: {run_directory}")
+
+    run_directory.mkdir(parents=True)
+    write_dataset(examples, run_directory / "data.json")
+    stored_config = dict(config)
+    stored_config["created_at"] = datetime.now().astimezone().isoformat()
+    stored_config["example_count"] = len(examples)
+    (run_directory / "config.json").write_text(
+        json.dumps(stored_config, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return run_directory

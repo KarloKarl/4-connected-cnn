@@ -4,7 +4,7 @@ from pathlib import Path
 
 import json
 
-from training.generate_dataset import generate_games, write_dataset, write_jsonl
+from training.generate_dataset import generate_games, save_run, write_dataset, write_jsonl
 
 
 class DatasetGeneratorTests(unittest.TestCase):
@@ -40,6 +40,22 @@ class DatasetGeneratorTests(unittest.TestCase):
             write_dataset(examples, output)
 
             self.assertEqual(json.loads(output.read_text(encoding="utf-8")), examples)
+
+    def test_saves_data_and_configuration_in_timestamp_directory(self):
+        examples = generate_games(1, min_depth=1, seed=1)[:1]
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = save_run(
+                examples,
+                {"game_count": 1, "min_depth": 1, "max_depth": 1},
+                Path(directory),
+                timestamp="20261030_164500",
+            )
+
+            self.assertEqual(run_directory.name, "20261030_164500")
+            self.assertTrue((run_directory / "data.json").is_file())
+            config = json.loads((run_directory / "config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["example_count"], 1)
+            self.assertIn("created_at", config)
 
 
 if __name__ == "__main__":
