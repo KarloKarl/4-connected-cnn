@@ -174,6 +174,10 @@ select, button {
   margin: 0.75rem 0;
 }
 
+.player-configs[hidden] {
+  display: none;
+}
+
 .player-configs fieldset {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
