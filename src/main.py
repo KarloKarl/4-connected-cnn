@@ -13,7 +13,7 @@ from algos.minimax_strategy import MinimaxStrategy
 from board_adapter import api_move, state_from_api_rows
 from connect_four import COLUMNS, PLAYER_ONE, PLAYER_TWO, ROWS, GameState
 from strategies import create_strategy
-from training.viewer import load_json, load_run
+from training.viewer import decode_board_for_view, load_json, load_run
 
 import logging
 
@@ -151,12 +151,19 @@ async def training_game(run_id: str, game_index: int) -> Dict:
     games = run["games"]
     if game_index < 0 or game_index >= len(games):
         raise HTTPException(status_code=404, detail="training game not found")
+    steps = [
+        {
+            **example,
+            "board": decode_board_for_view(example),
+        }
+        for example in games[game_index]
+    ]
     return {
         "config": run["config"],
         "difficulty_distribution": run["difficulty_distribution"],
         "game_difficulty_distribution": run["game_difficulty_distribution"],
         "game_index": game_index,
-        "steps": games[game_index],
+        "steps": steps,
     }
 
 

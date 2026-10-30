@@ -35,6 +35,12 @@ def group_examples(examples: Sequence[Dict]) -> List[List[Dict]]:
     return games
 
 
+def decode_board_for_view(example: Dict) -> List[int]:
+    """Convert the player-relative training board to absolute piece values."""
+    player = int(example.get("player", 1))
+    return [int(cell) * player for cell in example["board"]]
+
+
 def load_run(run_directory: Path) -> Dict:
     config = load_json(run_directory / "config.json")
     examples = load_json(run_directory / "data.json")

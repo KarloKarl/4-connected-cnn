@@ -113,13 +113,51 @@ select, button {
 }
 
 .config {
-  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.6rem;
   margin: 1rem auto;
-  padding: 0.75rem;
-  overflow: auto;
   text-align: left;
+}
+
+.config-item {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
   background: #eef2f7;
+  border-left: 0.25rem solid #4a90e2;
   border-radius: 0.4rem;
+}
+
+.config-label {
+  color: #536176;
+  font-size: 0.78rem;
+}
+
+.piece-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin: 0.75rem 0;
+  color: #536176;
+  font-size: 0.9rem;
+}
+
+.legend-piece {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: 0.3rem;
+  vertical-align: -0.1rem;
+  border-radius: 50%;
+}
+
+.legend-yellow {
+  background: #f2c94c;
+}
+
+.legend-red {
+  background: #eb5757;
 }
 
 .distribution {
