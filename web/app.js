@@ -220,18 +220,17 @@ function renderDifficultyDistribution(gameSteps, runDistribution, config) {
   const runCounts = Object.fromEntries(
     depths.map((depth) => [depth, Number(runDistribution[String(depth)] || 0)]),
   );
+  const width = 640;
+  const height = 360;
+  const plotLeft = 58;
+  const plotRight = 620;
+  const plotTop = 55;
+  const plotBottom = 300;
+  const plotHeight = plotBottom - plotTop;
   const maxCount = Math.max(
     1,
     ...depths.map((depth) => Math.max(selectedCounts[depth], runCounts[depth])),
   );
-  const width = 640;
-  const height = 300;
-  const plotLeft = 52;
-  const plotRight = 620;
-  const plotWidth = plotRight - plotLeft;
-  const plotHeight = 82;
-  const x = (index) => plotLeft + (index * plotWidth) / Math.max(1, depths.length - 1);
-  const y = (count, top) => top + plotHeight - (count / maxCount) * plotHeight;
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("role", "img");
@@ -243,66 +242,120 @@ function renderDifficultyDistribution(gameSteps, runDistribution, config) {
   title.setAttribute("x", "52");
   title.setAttribute("y", "20");
   title.setAttribute("font-weight", "600");
-  title.textContent = "Schwierigkeitsverteilung";
+  title.textContent = "Schwierigkeitsverteilung der Züge";
   svg.appendChild(title);
-  renderDistributionPlot(
-    svg, "Tiefe Spiel", "Züge", selectedCounts, depths, x, y, 35,
-  );
-  renderDistributionPlot(
-    svg, "Tiefe Training", "Partien", runCounts, depths, x, y, 160,
+  renderDistributionBars(
+    svg,
+    selectedCounts,
+    runCounts,
+    depths,
+    maxCount,
+    plotLeft,
+    plotRight,
+    plotTop,
+    plotBottom,
+    plotHeight,
   );
   element.appendChild(svg);
 }
 
-function renderDistributionPlot(svg, label, unit, counts, depths, x, y, top) {
+function renderDistributionBars(
+  svg,
+  selectedCounts,
+  runCounts,
+  depths,
+  maxCount,
+  plotLeft,
+  plotRight,
+  plotTop,
+  plotBottom,
+  plotHeight,
+) {
   const namespace = svg.namespaceURI;
-  const baselineY = top + 102;
-  const baseline = document.createElementNS(namespace, "line");
-  baseline.setAttribute("x1", "52");
-  baseline.setAttribute("x2", "620");
-  baseline.setAttribute("y1", String(baselineY));
-  baseline.setAttribute("y2", String(baselineY));
-  baseline.setAttribute("stroke", "#9aa7b8");
-  svg.appendChild(baseline);
-  const heading = document.createElementNS(namespace, "text");
-  heading.setAttribute("x", "52");
-  heading.setAttribute("y", String(top + 14));
-  heading.setAttribute("font-size", "13");
-  heading.textContent = `${label} (Anzahl ${unit})`;
-  svg.appendChild(heading);
-  const colors = ["#08a900", "#58c700", "#d9df00", "#efb647", "#e7b29d"];
-  const points = depths.map((depth, index) => ({
-    x: x(index),
-    y: y(counts[depth], top + 20),
-  }));
-  points.slice(0, -1).forEach((point, index) => {
-    const next = points[index + 1];
-    const middle = (point.x + next.x) / 2;
-    const path = document.createElementNS(namespace, "path");
-    path.setAttribute(
-      "d",
-      [
-        `M ${point.x} ${baselineY}`,
-        `L ${point.x} ${point.y}`,
-        `Q ${middle} ${(point.y + next.y) / 2 - 8} ${next.x} ${next.y}`,
-        `L ${next.x} ${baselineY}`,
-        "Z",
-      ].join(" "),
-    );
-    path.setAttribute("fill", colors[index % colors.length]);
-    path.setAttribute("stroke", colors[index % colors.length]);
-    path.setAttribute("stroke-width", "1");
-    path.setAttribute("aria-label", `${label}, Tiefe ${depths[index]}`);
-    svg.appendChild(path);
-  });
+  const xStep = (plotRight - plotLeft) / depths.length;
+  const groupWidth = xStep * 0.72;
+  const barGap = 3;
+  const barWidth = (groupWidth - barGap) / 2;
+  const y = (count) => plotBottom - (count / maxCount) * plotHeight;
+
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const value = Math.round((maxCount * tick) / 4);
+    const yPosition = plotBottom - (plotHeight * tick) / 4;
+    const grid = document.createElementNS(namespace, "line");
+    grid.setAttribute("x1", String(plotLeft));
+    grid.setAttribute("x2", String(plotRight));
+    grid.setAttribute("y1", String(yPosition));
+    grid.setAttribute("y2", String(yPosition));
+    grid.setAttribute("stroke", "#c5ccd6");
+    grid.setAttribute("stroke-width", "1");
+    svg.appendChild(grid);
+    const label = document.createElementNS(namespace, "text");
+    label.setAttribute("x", String(plotLeft - 8));
+    label.setAttribute("y", String(yPosition + 4));
+    label.setAttribute("text-anchor", "end");
+    label.setAttribute("font-size", "11");
+    label.textContent = value;
+    svg.appendChild(label);
+  }
+
+  const yLabel = document.createElementNS(namespace, "text");
+  yLabel.setAttribute("transform", `translate(15 ${(plotTop + plotBottom) / 2}) rotate(-90)`);
+  yLabel.setAttribute("text-anchor", "middle");
+  yLabel.setAttribute("font-size", "12");
+  yLabel.textContent = "Anzahl Züge";
+  svg.appendChild(yLabel);
+
   depths.forEach((depth, index) => {
+    const groupLeft = plotLeft + index * xStep + (xStep - groupWidth) / 2;
+    [
+      [selectedCounts[depth], "#eb5757", "Tiefe Spiel"],
+      [runCounts[depth], "#4a90e2", "Tiefe Training"],
+    ].forEach(([count, color, label], seriesIndex) => {
+      const bar = document.createElementNS(namespace, "rect");
+      bar.setAttribute("x", String(groupLeft + seriesIndex * (barWidth + barGap)));
+      bar.setAttribute("y", String(y(count)));
+      bar.setAttribute("width", String(barWidth));
+      bar.setAttribute("height", String(plotBottom - y(count)));
+      bar.setAttribute("fill", color);
+      bar.setAttribute("aria-label", `${label}, Tiefe ${depth}: ${count}`);
+      svg.appendChild(bar);
+      const value = document.createElementNS(namespace, "text");
+      value.setAttribute(
+        "x",
+        String(groupLeft + seriesIndex * (barWidth + barGap) + barWidth / 2),
+      );
+      value.setAttribute("y", String(y(count) - 5));
+      value.setAttribute("text-anchor", "middle");
+      value.setAttribute("font-size", "10");
+      value.textContent = count;
+      svg.appendChild(value);
+    });
     const axisLabel = document.createElementNS(namespace, "text");
-    axisLabel.setAttribute("x", String(x(index)));
-    axisLabel.setAttribute("y", String(top + 120));
+    axisLabel.setAttribute("x", String(groupLeft + groupWidth / 2));
+    axisLabel.setAttribute("y", String(plotBottom + 20));
     axisLabel.setAttribute("text-anchor", "middle");
     axisLabel.setAttribute("font-size", "12");
     axisLabel.textContent = `Tiefe ${depth}`;
     svg.appendChild(axisLabel);
+  });
+
+  [
+    ["Tiefe Spiel", "#eb5757", plotLeft],
+    ["Tiefe Training", "#4a90e2", plotLeft + 130],
+  ].forEach(([label, color, xPosition]) => {
+    const marker = document.createElementNS(namespace, "rect");
+    marker.setAttribute("x", String(xPosition));
+    marker.setAttribute("y", String(plotBottom + 42));
+    marker.setAttribute("width", "12");
+    marker.setAttribute("height", "12");
+    marker.setAttribute("fill", color);
+    svg.appendChild(marker);
+    const legend = document.createElementNS(namespace, "text");
+    legend.setAttribute("x", String(xPosition + 18));
+    legend.setAttribute("y", String(plotBottom + 52));
+    legend.setAttribute("font-size", "12");
+    legend.textContent = label;
+    svg.appendChild(legend);
   });
 }
 
