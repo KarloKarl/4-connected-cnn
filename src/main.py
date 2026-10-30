@@ -5,6 +5,7 @@ import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from algos.minimax_strategy import MinimaxStrategy
@@ -67,6 +68,8 @@ class Board(BaseModel):
 
 app = FastAPI()
 WEB_INDEX = Path(__file__).resolve().parent.parent / "web" / "index.html"
+WEB_ASSETS = Path(__file__).resolve().parent.parent / "web"
+app.mount("/web/assets", StaticFiles(directory=WEB_ASSETS), name="web-assets")
 
 
 class WebMoveRequest(BaseModel):
