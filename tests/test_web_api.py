@@ -34,6 +34,24 @@ class WebApiTests(unittest.TestCase):
             asyncio.run(web_move(WebMoveRequest(board=board, column=0)))
         self.assertEqual(context.exception.status_code, 400)
 
+    def test_finished_game_rejects_follow_up_moves(self):
+        board = [
+            [PLAYER_TWO, PLAYER_TWO, PLAYER_TWO, PLAYER_TWO, 0, 0, 0],
+            [0] * 7,
+            [0] * 7,
+            [0] * 7,
+            [0] * 7,
+            [0] * 7,
+        ]
+
+        with self.assertRaises(HTTPException) as context:
+            asyncio.run(web_move(WebMoveRequest(board=board, column=4)))
+        self.assertEqual(context.exception.status_code, 400)
+
+    def test_web_difficulty_is_limited_to_interactive_range(self):
+        with self.assertRaises(ValueError):
+            WebMoveRequest(board=[[0] * 7 for _ in range(6)], column=0, difficulty=7)
+
 
 if __name__ == "__main__":
     unittest.main()

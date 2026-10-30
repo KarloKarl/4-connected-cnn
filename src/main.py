@@ -77,7 +77,7 @@ class WebMoveRequest(BaseModel):
     current_player: int = PLAYER_TWO
     column: int = Field(ge=0, lt=COLUMNS)
     algorithm: Literal["random", "minimax"] = "minimax"
-    difficulty: int = Field(default=4, ge=1, le=8)
+    difficulty: int = Field(default=4, ge=1, le=6)
 
 
 class WebMoveResponse(BaseModel):
@@ -102,6 +102,8 @@ async def web_move(request: WebMoveRequest):
         )
         if state.current_player != PLAYER_TWO:
             raise ValueError("the human player is not expected to move")
+        if state.is_terminal():
+            raise ValueError("the game is already over")
         state = state.drop_piece(request.column)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
