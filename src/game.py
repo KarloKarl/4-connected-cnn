@@ -1,100 +1,74 @@
-from os import system, name
+from os import name, system
 from random import randint
 
-from algos.Random import Random
-from algos.Minimax import Minimax
-from utils import full_board, check_win, make_move
+from algos.Random import RandomStrategy
+from algos.minimax_strategy import MinimaxStrategy
+from connect_four import COLUMNS, PLAYER_ONE, PLAYER_TWO, GameState
 
-import sys
 
-# some global variables
-COLUMNS = 7
-ROWS = 6
-board = [[' ' for x in range(COLUMNS)] for y in range(ROWS)]
-
-HUMAN_PIECE = 'h'
-AI_PIECE = 'r'
-
-HUMAN_TURN = 1
-AI_TURN = 0
-
-# enter game mode here
+HUMAN_PLAYER = PLAYER_TWO
+AI_PLAYER = PLAYER_ONE
 game_mode = "minimax"
 
-def clear_terminal():
-    # clear for linux / macOS
-    if name == 'posix':
-        _ = system('clear')
-    # clear for windows
-    else:
-        _ = system('cls')
 
-def print_board():
+def clear_terminal():
+    system("clear" if name == "posix" else "cls")
+
+
+def print_board(state: GameState):
     clear_terminal()
     print("*************************************")
     print("")
-    for row in range(ROWS):
-        print('      |', end='')
-        for col in range(COLUMNS):
-            print(board[row][col] + '|', end='')
-        print('\n')
-    print('      |1|2|3|4|5|6|7|')
+    for row in range(5, -1, -1):
+        print("      |", end="")
+        for column in range(COLUMNS):
+            print(f"{state.board[row][column]:2}|", end="")
+        print("\n")
+    print("      |1 |2 |3 |4 |5 |6 |7 |")
+
 
 def main():
     print("*************************************")
     print("Welcome to the game connect four!")
     print("*************************************")
-    print_board()
 
-    # check the chosen mode
-    if game_mode == "random":
-        modus = Random(board, ROWS, COLUMNS, AI_PIECE, HUMAN_PIECE)
-    if game_mode == "minimax":
-        modus = Minimax(board)
+    state = GameState.initial()
+    strategy = (
+        RandomStrategy()
+        if game_mode == "random"
+        else MinimaxStrategy(depth=4)
+    )
+    print_board(state)
 
-    # randomly choose who starts the game (turn)
-    curr_turn = randint(AI_TURN, HUMAN_TURN)
+    if randint(0, 1) == 1:
+        state = GameState(state.board, HUMAN_PLAYER)
 
-    # loop as long as there is no winner 
-    while not full_board(board):
-
-        # Human makes a move
-        if HUMAN_TURN == curr_turn:
+    while not state.is_terminal():
+        if state.current_player == HUMAN_PLAYER:
             print("*************************************")
             print("Player HUMAN has to make the next move!")
-
-            chosen_col = int(input("\nInput a number from 1-7 for column\n"))
-
-            make_move(board, chosen_col, HUMAN_PIECE)
-
-            if check_win(board, HUMAN_PIECE):
-                print_board()
-                print("WIN HUMAN")
-                break
-
-            curr_turn = AI_TURN
-
-        # AI makes a move
-        if AI_TURN == curr_turn:
+            chosen_column = int(input("\nInput a number from 1-7 for column\n")) - 1
+        else:
             print("*************************************")
             print("Player AI has to make the next move!")
+            chosen_column = strategy.choose_move(state)
+            print(f"AI chooses column {chosen_column + 1}")
 
-            chosen_col = modus.choose_column(board)
+        if chosen_column not in state.legal_moves():
+            print("That column is not available.")
+            continue
 
-            make_move(board, chosen_col + 1, AI_PIECE)
+        state = state.drop_piece(chosen_column)
+        print_board(state)
 
-            if check_win(board, AI_PIECE):
-                print_board()
-                print("WIN AI")
-                break
-
-            curr_turn = HUMAN_TURN
-
-        # print updated board after every move
-        print_board()
-    
-    sys.exit(1)
+    winner = state.winner()
+    if winner == HUMAN_PLAYER:
+        print("WIN HUMAN")
+    elif winner == AI_PLAYER:
+        print("WIN AI")
+    else:
+        print("DRAW")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
