@@ -126,7 +126,6 @@ async def training_runs() -> List[Dict]:
             "game_count": len(games),
             "example_count": config.get("example_count", 0),
             "difficulty_distribution": run["difficulty_distribution"],
-            "game_difficulty_distribution": run["game_difficulty_distribution"],
         })
     return runs
 
@@ -161,7 +160,6 @@ async def training_game(run_id: str, game_index: int) -> Dict:
     return {
         "config": run["config"],
         "difficulty_distribution": run["difficulty_distribution"],
-        "game_difficulty_distribution": run["game_difficulty_distribution"],
         "game_index": game_index,
         "steps": steps,
     }

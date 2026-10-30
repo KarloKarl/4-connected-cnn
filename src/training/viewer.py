@@ -48,16 +48,10 @@ def load_run(run_directory: Path) -> Dict:
     difficulty_counts = Counter(
         str(example["depth"]) for example in examples if "depth" in example
     )
-    game_difficulty_counts = Counter(
-        str(game[0]["depth"]) for game in games if game and "depth" in game[0]
-    )
     return {
         "config": config,
         "games": games,
         "difficulty_distribution": dict(
             sorted(difficulty_counts.items(), key=lambda item: int(item[0]))
-        ),
-        "game_difficulty_distribution": dict(
-            sorted(game_difficulty_counts.items(), key=lambda item: int(item[0]))
         ),
     }
