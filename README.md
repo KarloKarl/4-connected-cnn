@@ -72,6 +72,9 @@ web/                             HTML, JavaScript und CSS
 tests/                           Unit- und API-Tests
 ```
 
+Weitere technische Details stehen in der [technischen Dokumentation unter
+`src/README.md`](./src/README.md).
+
 ## API
 
 - `GET /play` – Webapp
@@ -82,4 +85,3 @@ tests/                           Unit- und API-Tests
 - `GET /web/training/runs/{run_id}/games` – Spiele eines Laufs
 - `GET /web/training/runs/{run_id}/games/{game_index}` – Spielschritte
 - `POST /updateBoard` – bestehende Hardware-Schnittstelle
-
