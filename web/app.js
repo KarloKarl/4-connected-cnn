@@ -9,13 +9,27 @@ let trainingSteps = [];
 let trainingStep = 0;
 let trainingTimer = null;
 
-document.querySelectorAll(".tab").forEach((tab) => {
+document.querySelectorAll(".main-tab").forEach((tab) => {
   tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((item) => {
+    document.querySelectorAll(".main-tab").forEach((item) => {
       item.classList.toggle("active", item === tab);
     });
     document.querySelectorAll(".tab-content").forEach((content) => {
       content.classList.toggle("active", content.id === `${tab.dataset.tab}-tab`);
+    });
+  });
+});
+
+document.querySelectorAll(".training-subtab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".training-subtab").forEach((item) => {
+      item.classList.toggle("active", item === tab);
+    });
+    document.querySelectorAll(".subtab-content").forEach((content) => {
+      content.classList.toggle(
+        "active",
+        content.id === `training-${tab.dataset.trainingTab}-tab`,
+      );
     });
   });
 });

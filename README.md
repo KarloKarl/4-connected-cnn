@@ -45,7 +45,8 @@ Die Trainingsdaten speichern den Brettzustand vor dem Lehrzug. Die Webansicht
 zeigt beim ausgewählten Schritt den Zustand nach diesem Zug, sodass auch der
 letzte Zug und ein dadurch entstandener Gewinn sichtbar sind. Der angezeigte
 Partieausgang bezieht sich weiterhin auf die abgeschlossene Partie.
-Über das Trainingspanel können neue Datensätze direkt gestartet und benannt
+Das Trainingspanel ist in die Untertabs „Nachvollziehen“ und „Starten“
+aufgeteilt. Über „Starten“ können neue Datensätze direkt gestartet und benannt
 werden. Dazu werden Name, Spieleanzahl, Tiefenbereich, Tiefenverteilung, Seed
 und Batchgröße eingetragen; der Lauf wird im Hintergrund erzeugt und sein
 Status anschließend im Browser angezeigt.

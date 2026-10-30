@@ -10,8 +10,8 @@
   <main>
     <h1>Vier gewinnt</h1>
     <nav class="tabs" aria-label="Ansichten">
-      <button class="tab active" type="button" data-tab="live">Live-Spiel</button>
-      <button class="tab" type="button" data-tab="training">Trainingsläufe</button>
+      <button class="tab main-tab active" type="button" data-tab="live">Live-Spiel</button>
+      <button class="tab main-tab" type="button" data-tab="training">Trainingsläufe</button>
     </nav>
     <section id="live-tab" class="tab-content active">
       <section class="panel">
@@ -39,6 +39,11 @@
     <section id="training-tab" class="tab-content">
       <section class="panel training-panel">
         <h2>Trainingsläufe nachvollziehen</h2>
+      <nav class="tabs training-tabs" aria-label="Trainingsansichten">
+        <button class="tab training-subtab active" type="button" data-training-tab="view">Nachvollziehen</button>
+        <button class="tab training-subtab" type="button" data-training-tab="start">Starten</button>
+      </nav>
+      <section id="training-view-tab" class="subtab-content active">
       <div class="training-controls">
         <label>Trainingslauf
           <select id="training-run">
@@ -51,6 +56,21 @@
           </select>
         </label>
       </div>
+      <div id="training-config" class="config" aria-label="Trainingskonfiguration"></div>
+      <div class="piece-legend" aria-label="Spielerfarben">
+        <span><i class="legend-piece legend-yellow"></i> Spieler 1</span>
+        <span><i class="legend-piece legend-red"></i> Spieler -1</span>
+      </div>
+      <div id="training-distribution" class="distribution" aria-label="Schwierigkeitsverteilung"></div>
+      <div id="training-board" class="board training-board" aria-label="Trainingsbrett"></div>
+      <p id="training-status" role="status">Kein Trainingslauf ausgewählt.</p>
+      <div class="training-navigation">
+        <button id="training-previous" type="button" disabled>Zurück</button>
+        <button id="training-play" type="button" disabled>Automatisch abspielen</button>
+        <button id="training-next" type="button" disabled>Weiter</button>
+      </div>
+      </section>
+      <section id="training-start-tab" class="subtab-content">
       <form id="training-generator" class="generator" aria-label="Trainingslauf starten">
         <h3>Neuen Trainingslauf starten</h3>
         <div class="generator-fields">
@@ -86,19 +106,7 @@
         <button type="submit" id="training-start">Trainingslauf starten</button>
         <span id="training-job-status" role="status"></span>
       </form>
-      <div id="training-config" class="config" aria-label="Trainingskonfiguration"></div>
-      <div class="piece-legend" aria-label="Spielerfarben">
-        <span><i class="legend-piece legend-yellow"></i> Spieler 1</span>
-        <span><i class="legend-piece legend-red"></i> Spieler -1</span>
-      </div>
-      <div id="training-distribution" class="distribution" aria-label="Schwierigkeitsverteilung"></div>
-      <div id="training-board" class="board training-board" aria-label="Trainingsbrett"></div>
-      <p id="training-status" role="status">Kein Trainingslauf ausgewählt.</p>
-      <div class="training-navigation">
-        <button id="training-previous" type="button" disabled>Zurück</button>
-        <button id="training-play" type="button" disabled>Automatisch abspielen</button>
-        <button id="training-next" type="button" disabled>Weiter</button>
-      </div>
+      </section>
       </section>
     </section>
   </main>

@@ -45,6 +45,18 @@ main {
   display: block;
 }
 
+.subtab-content {
+  display: none;
+}
+
+.subtab-content.active {
+  display: block;
+}
+
+.training-tabs {
+  margin: 0.75rem 0 1.25rem;
+}
+
 .panel {
   margin: 1rem 0;
   padding: 1.25rem;
