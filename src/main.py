@@ -116,7 +116,8 @@ async def training_runs() -> List[Dict]:
             continue
         try:
             config = load_json(directory / "config.json")
-            games = load_run(directory)["games"]
+            run = load_run(directory)
+            games = run["games"]
         except (OSError, ValueError, json.JSONDecodeError):
             continue
         runs.append({
@@ -124,6 +125,8 @@ async def training_runs() -> List[Dict]:
             "config": config,
             "game_count": len(games),
             "example_count": config.get("example_count", 0),
+            "difficulty_distribution": run["difficulty_distribution"],
+            "game_difficulty_distribution": run["game_difficulty_distribution"],
         })
     return runs
 
@@ -150,6 +153,8 @@ async def training_game(run_id: str, game_index: int) -> Dict:
         raise HTTPException(status_code=404, detail="training game not found")
     return {
         "config": run["config"],
+        "difficulty_distribution": run["difficulty_distribution"],
+        "game_difficulty_distribution": run["game_difficulty_distribution"],
         "game_index": game_index,
         "steps": games[game_index],
     }

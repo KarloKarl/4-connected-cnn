@@ -54,6 +54,8 @@ class TrainingViewerTests(unittest.TestCase):
         self.assertEqual(games[0]["step_count"], 1)
         self.assertEqual(detail["config"]["example_count"], 1)
         self.assertEqual(detail["steps"][0]["move"], 3)
+        self.assertEqual(detail["difficulty_distribution"], {"1": 1})
+        self.assertEqual(detail["game_difficulty_distribution"], {"1": 1})
 
 
 if __name__ == "__main__":

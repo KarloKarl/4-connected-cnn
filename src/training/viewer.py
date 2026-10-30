@@ -1,6 +1,7 @@
 """Load and group persisted training runs for the browser viewer."""
 
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Sequence
 
@@ -37,4 +38,20 @@ def group_examples(examples: Sequence[Dict]) -> List[List[Dict]]:
 def load_run(run_directory: Path) -> Dict:
     config = load_json(run_directory / "config.json")
     examples = load_json(run_directory / "data.json")
-    return {"config": config, "games": group_examples(examples)}
+    games = group_examples(examples)
+    difficulty_counts = Counter(
+        str(example["depth"]) for example in examples if "depth" in example
+    )
+    game_difficulty_counts = Counter(
+        str(game[0]["depth"]) for game in games if game and "depth" in game[0]
+    )
+    return {
+        "config": config,
+        "games": games,
+        "difficulty_distribution": dict(
+            sorted(difficulty_counts.items(), key=lambda item: int(item[0]))
+        ),
+        "game_difficulty_distribution": dict(
+            sorted(game_difficulty_counts.items(), key=lambda item: int(item[0]))
+        ),
+    }

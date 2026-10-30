@@ -30,7 +30,9 @@ Läufe ausgewählt, ihre vollständige `config.json` eingesehen und einzelne
 Spiele Schritt für Schritt oder automatisch abgespielt werden. Ein Schritt
 zeigt das gespeicherte spielerrelative Brett, den Minimax-Lehrzug, Spieler,
 Tiefe und das Ergebnis der Partie. Ältere Läufe ohne `game`-/`step`-Metadaten
-werden weiterhin automatisch anhand ihrer Brettfolge gruppiert.
+werden weiterhin automatisch anhand ihrer Brettfolge gruppiert. Zusätzlich
+zeigt das Panel die tatsächliche Schwierigkeitsverteilung sowohl pro Partie
+(die relevante Verteilung der gezogenen Tiefen) als auch pro Trainingsbeispiel.
 
 ## Lokales Spiel
 

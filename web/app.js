@@ -150,7 +150,53 @@ async function loadTrainingGame(runId, index) {
   trainingStep = 0;
   document.querySelector("#training-config").textContent =
     JSON.stringify(result.config, null, 2);
+  renderDifficultyDistribution(
+    result.game_difficulty_distribution,
+    result.difficulty_distribution,
+  );
   renderTrainingBoard();
+}
+
+function renderDifficultyDistribution(gameDistribution, exampleDistribution) {
+  const element = document.querySelector("#training-distribution");
+  element.replaceChildren();
+  const gameEntries = Object.entries(gameDistribution || {});
+  const exampleEntries = Object.entries(exampleDistribution || {});
+  if (!gameEntries.length && !exampleEntries.length) {
+    element.textContent = "Keine Schwierigkeitsdaten vorhanden.";
+    return;
+  }
+  const heading = document.createElement("strong");
+  heading.textContent = "Tatsächliche Verteilung der Schwierigkeitsstufen";
+  element.appendChild(heading);
+  renderDistributionRows(element, "Partien", gameEntries);
+  renderDistributionRows(element, "Trainingsbeispiele", exampleEntries);
+}
+
+function renderDistributionRows(element, label, entries) {
+  if (!entries.length) {
+    return;
+  }
+  const total = entries.reduce((sum, [, count]) => sum + count, 0);
+  const subheading = document.createElement("div");
+  subheading.textContent = `${label} (gesamt: ${total})`;
+  subheading.className = "distribution-label";
+  element.appendChild(subheading);
+  const maxCount = Math.max(...entries.map(([, count]) => count));
+  entries.forEach(([depth, count]) => {
+    const row = document.createElement("div");
+    row.className = "distribution-row";
+    const label = document.createElement("span");
+    label.textContent = `Tiefe ${depth}`;
+    const bar = document.createElement("div");
+    bar.className = "distribution-bar";
+    bar.style.width = `${(count / maxCount) * 100}%`;
+    bar.title = `${count} von ${total} Beispielen`;
+    const value = document.createElement("span");
+    value.textContent = `${count} (${((count / total) * 100).toFixed(1)} %)`;
+    row.append(label, bar, value);
+    element.appendChild(row);
+  });
 }
 
 async function loadTrainingRuns() {

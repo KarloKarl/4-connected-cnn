@@ -94,6 +94,32 @@ select, button {
   border-radius: 0.4rem;
 }
 
+.distribution {
+  margin: 1rem auto;
+  max-width: 34rem;
+  text-align: left;
+}
+
+.distribution-label {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.distribution-row {
+  display: grid;
+  grid-template-columns: 5rem 1fr 8rem;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.35rem 0;
+}
+
+.distribution-bar {
+  height: 0.8rem;
+  background: #4a90e2;
+  border-radius: 0.4rem;
+}
+
 .training-board {
   background: #315f9f;
 }
