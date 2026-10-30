@@ -148,6 +148,27 @@ select, button {
   margin: 0 0 0.75rem;
 }
 
+.form-section {
+  margin: 0 0 1rem;
+  padding: 0.85rem;
+  border: 1px solid #d5dce7;
+  border-radius: 0.5rem;
+}
+
+.form-section > legend {
+  padding: 0 0.35rem;
+  color: #1854a5;
+  font-weight: 700;
+}
+
+.form-section > label {
+  max-width: 24rem;
+}
+
+.form-section > label select {
+  width: 100%;
+}
+
 .generator-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
@@ -186,9 +207,20 @@ select, button {
   border-radius: 0.4rem;
 }
 
+.player-configs label {
+  min-width: 0;
+}
+
 .player-configs legend {
   color: #536176;
   font-weight: 600;
+}
+
+.generator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .checkbox-label {

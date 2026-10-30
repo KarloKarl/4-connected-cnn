@@ -72,12 +72,24 @@
       <section id="training-start-tab" class="subtab-content">
       <form id="training-generator" class="generator" aria-label="Trainingslauf starten">
         <h3>Neuen Trainingslauf starten</h3>
-        <div class="generator-fields">
+        <fieldset class="form-section">
+          <legend>Allgemeine Einstellungen</legend>
+          <div class="generator-fields">
           <label class="generator-name">Name
-            <input id="training-name" type="text" maxlength="80" value="Trainingslauf" required>
+          <input id="training-name" type="text" maxlength="80" value="Trainingslauf" required>
           </label>
           <label>Spiele
-            <input id="training-games" type="number" min="1" max="10000" value="10" required>
+          <input id="training-games" type="number" min="1" max="10000" value="10" required>
+          </label>
+          </div>
+        </fieldset>
+        <fieldset class="form-section">
+          <legend>Schwierigkeit</legend>
+          <label>Schwierigkeitsmodus
+          <select id="training-difficulty-mode">
+            <option value="symmetric">Symmetrisch (beide Spieler gleich)</option>
+            <option value="asymmetric">Asymmetrisch (pro Spieler)</option>
+          </select>
           </label>
           <div id="training-symmetric-config" class="symmetric-config">
             <label>Min. Tiefe
@@ -93,20 +105,7 @@
               </select>
             </label>
           </div>
-          <label>Batchgröße
-            <input id="training-batch-size" type="number" min="1" max="10000" value="100" required>
-          </label>
-          <label>Seed
-            <input id="training-seed" type="number" placeholder="optional">
-          </label>
-        </div>
-        <label>Schwierigkeitsmodus
-          <select id="training-difficulty-mode">
-            <option value="symmetric">Symmetrisch (beide Spieler gleich)</option>
-            <option value="asymmetric">Asymmetrisch (pro Spieler)</option>
-          </select>
-        </label>
-        <div id="training-player-configs" class="player-configs" hidden>
+          <div id="training-player-configs" class="player-configs" hidden>
           <fieldset>
             <legend>Spieler 1</legend>
             <label>Min. Tiefe
@@ -137,13 +136,27 @@
               </select>
             </label>
           </fieldset>
+          </div>
+        </fieldset>
+        <fieldset class="form-section">
+          <legend>Weitere Optionen</legend>
+          <div class="generator-fields">
+            <label>Batchgröße
+              <input id="training-batch-size" type="number" min="1" max="10000" value="100" required>
+            </label>
+            <label>Seed
+              <input id="training-seed" type="number" placeholder="optional">
+            </label>
+          </div>
+          <label class="checkbox-label">
+            <input id="training-random-first-move" type="checkbox" checked>
+            Ersten Zug zufällig wählen
+          </label>
+        </fieldset>
+        <div class="generator-actions">
+          <button type="submit" id="training-start">Trainingslauf starten</button>
+          <span id="training-job-status" role="status"></span>
         </div>
-        <label class="checkbox-label">
-          <input id="training-random-first-move" type="checkbox" checked>
-          Ersten Zug zufällig wählen
-        </label>
-        <button type="submit" id="training-start">Trainingslauf starten</button>
-        <span id="training-job-status" role="status"></span>
       </form>
       </section>
       </section>
