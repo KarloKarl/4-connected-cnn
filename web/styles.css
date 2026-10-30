@@ -124,6 +124,40 @@ select, button {
   align-items: end;
 }
 
+.generator {
+  margin: 1rem auto;
+  padding: 1rem;
+  background: #f6f8fb;
+  border-radius: 0.5rem;
+  text-align: left;
+}
+
+.generator h3 {
+  margin: 0 0 0.75rem;
+}
+
+.generator-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.6rem;
+}
+
+.generator input, .generator select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  margin: 0.75rem 0;
+}
+
+#training-job-status {
+  margin-left: 0.5rem;
+  color: #536176;
+}
+
 .config {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));

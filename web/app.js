@@ -476,9 +476,74 @@ async function loadTrainingRuns() {
   }
 }
 
+function trainingFormValue(id) {
+  return document.querySelector(`#${id}`).value;
+}
+
+async function startTrainingRun(event) {
+  event.preventDefault();
+  const button = document.querySelector("#training-start");
+  const status = document.querySelector("#training-job-status");
+  const seed = trainingFormValue("training-seed");
+  const payload = {
+    game_count: Number(trainingFormValue("training-games")),
+    min_depth: Number(trainingFormValue("training-min-depth")),
+    max_depth: Number(trainingFormValue("training-max-depth")),
+    distribution: trainingFormValue("training-distribution"),
+    random_first_move: document.querySelector("#training-random-first-move").checked,
+    seed: seed === "" ? null : Number(seed),
+    batch_size: Number(trainingFormValue("training-batch-size")),
+  };
+  button.disabled = true;
+  status.textContent = "Trainingslauf wird gestartet ...";
+  try {
+    const response = await fetch("/web/training/runs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.detail || `HTTP ${response.status}`);
+    }
+    status.textContent = "Trainingslauf läuft ...";
+    await pollTrainingRun(result.id);
+  } catch (error) {
+    status.textContent = `Start fehlgeschlagen: ${error.message}`;
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function pollTrainingRun(runId) {
+  const status = document.querySelector("#training-job-status");
+  while (true) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const response = await fetch(
+      `/web/training/runs/${encodeURIComponent(runId)}/status`,
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.detail || `HTTP ${response.status}`);
+    }
+    if (result.status === "running") {
+      status.textContent = "Trainingslauf läuft ...";
+      continue;
+    }
+    if (result.status === "failed") {
+      throw new Error(result.error || "Unbekannter Fehler");
+    }
+    status.textContent = "Trainingslauf abgeschlossen.";
+    await loadTrainingRuns();
+    return;
+  }
+}
+
 document.querySelector("#training-run").addEventListener("change", (event) => {
   loadTrainingGames(event.target.value);
 });
+document.querySelector("#training-generator").addEventListener("submit", startTrainingRun);
 document.querySelector("#training-game").addEventListener("change", (event) => {
   loadTrainingGame(document.querySelector("#training-run").value, Number(event.target.value));
 });

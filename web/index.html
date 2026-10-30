@@ -51,6 +51,38 @@
           </select>
         </label>
       </div>
+      <form id="training-generator" class="generator" aria-label="Trainingslauf starten">
+        <h3>Neuen Trainingslauf starten</h3>
+        <div class="generator-fields">
+          <label>Spiele
+            <input id="training-games" type="number" min="1" max="10000" value="10" required>
+          </label>
+          <label>Min. Tiefe
+            <input id="training-min-depth" type="number" min="1" max="8" value="1" required>
+          </label>
+          <label>Max. Tiefe
+            <input id="training-max-depth" type="number" min="1" max="8" value="5" required>
+          </label>
+          <label>Verteilung
+            <select id="training-distribution">
+              <option value="uniform">Uniform</option>
+              <option value="bell">Glockenkurve</option>
+            </select>
+          </label>
+          <label>Batchgröße
+            <input id="training-batch-size" type="number" min="1" max="10000" value="100" required>
+          </label>
+          <label>Seed
+            <input id="training-seed" type="number" placeholder="optional">
+          </label>
+        </div>
+        <label class="checkbox-label">
+          <input id="training-random-first-move" type="checkbox" checked>
+          Ersten Zug zufällig wählen
+        </label>
+        <button type="submit" id="training-start">Trainingslauf starten</button>
+        <span id="training-job-status" role="status"></span>
+      </form>
       <div id="training-config" class="config" aria-label="Trainingskonfiguration"></div>
       <div class="piece-legend" aria-label="Spielerfarben">
         <span><i class="legend-piece legend-yellow"></i> Spieler 1</span>

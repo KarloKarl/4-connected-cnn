@@ -1,4 +1,6 @@
 import json
+from concurrent.futures import Future, ThreadPoolExecutor
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Literal, Optional
 
@@ -14,6 +16,7 @@ from board_adapter import api_move, state_from_api_rows
 from connect_four import COLUMNS, PLAYER_ONE, PLAYER_TWO, ROWS, GameState
 from strategies import create_strategy
 from training.viewer import decode_board_for_view, load_json, load_run
+from training.generate_dataset import generate_and_save_run
 
 import logging
 
@@ -72,6 +75,8 @@ app = FastAPI()
 WEB_INDEX = Path(__file__).resolve().parent.parent / "web" / "index.html"
 WEB_ASSETS = Path(__file__).resolve().parent.parent / "web"
 TRAINING_ROOT = WEB_ASSETS.parent / "data" / "training"
+TRAINING_EXECUTOR = ThreadPoolExecutor(max_workers=1)
+TRAINING_JOBS: Dict[str, Future] = {}
 app.mount("/web/assets", StaticFiles(directory=WEB_ASSETS), name="web-assets")
 
 
@@ -91,6 +96,16 @@ class WebMoveResponse(BaseModel):
     message: str
 
 
+class TrainingRunRequest(BaseModel):
+    game_count: int = Field(default=10, ge=1, le=10000)
+    min_depth: int = Field(default=1, ge=1, le=8)
+    max_depth: int = Field(default=5, ge=1, le=8)
+    distribution: Literal["uniform", "bell"] = "uniform"
+    random_first_move: bool = True
+    seed: Optional[int] = None
+    batch_size: int = Field(default=100, ge=1, le=10000)
+
+
 @app.get("/play")
 async def web_game():
     return FileResponse(WEB_INDEX)
@@ -104,6 +119,57 @@ def training_run_directory(run_id: str) -> Path:
     if not directory.is_dir():
         raise HTTPException(status_code=404, detail="training run not found")
     return directory
+
+
+def training_job_status(run_id: str, future: Future) -> Dict:
+    if not future.done():
+        return {"id": run_id, "status": "running"}
+    error = future.exception()
+    if error is not None:
+        return {"id": run_id, "status": "failed", "error": str(error)}
+    return {"id": run_id, "status": "completed"}
+
+
+def generate_training_run(
+    run_id: str,
+    config: Dict[str, object],
+) -> Path:
+    try:
+        return generate_and_save_run(config, TRAINING_ROOT, run_id)
+    except Exception as error:
+        logging.exception("Training run %s failed", run_id)
+        raise RuntimeError(f"Trainingslauf fehlgeschlagen: {error}") from error
+
+
+@app.post("/web/training/runs", status_code=202)
+async def start_training_run(request: TrainingRunRequest) -> Dict:
+    if request.max_depth < request.min_depth:
+        raise HTTPException(
+            status_code=422,
+            detail="max_depth muss mindestens min_depth entsprechen",
+        )
+    if any(not future.done() for future in TRAINING_JOBS.values()):
+        raise HTTPException(
+            status_code=409,
+            detail="Es läuft bereits ein Trainingslauf",
+        )
+    run_id = datetime.now().astimezone().strftime("%Y%m%d_%H%M%S_%f")
+    config = request.dict()
+    future = TRAINING_EXECUTOR.submit(generate_training_run, run_id, config)
+    TRAINING_JOBS[run_id] = future
+    return {"id": run_id, "status": "running", "config": config}
+
+
+@app.get("/web/training/runs/{run_id}/status")
+async def training_run_status(run_id: str) -> Dict:
+    future = TRAINING_JOBS.get(run_id)
+    if future is None:
+        try:
+            config = load_json(training_run_directory(run_id) / "config.json")
+        except (HTTPException, OSError, ValueError, json.JSONDecodeError):
+            raise HTTPException(status_code=404, detail="training run not found")
+        return {"id": run_id, "status": config.get("status", "unknown")}
+    return training_job_status(run_id, future)
 
 
 @app.get("/web/training/runs")

@@ -4,10 +4,17 @@ import unittest
 from fastapi import HTTPException
 
 from connect_four import PLAYER_ONE, PLAYER_TWO
-from main import WebMoveRequest, web_move
+from main import TrainingRunRequest, WebMoveRequest, start_training_run, web_move
 
 
 class WebApiTests(unittest.TestCase):
+    def test_training_run_rejects_invalid_depth_range(self):
+        with self.assertRaises(HTTPException) as context:
+            asyncio.run(start_training_run(
+                TrainingRunRequest(game_count=1, min_depth=5, max_depth=3),
+            ))
+        self.assertEqual(context.exception.status_code, 422)
+
     def test_move_returns_human_and_ai_turns(self):
         request = WebMoveRequest(
             board=[[0] * 7 for _ in range(6)],
