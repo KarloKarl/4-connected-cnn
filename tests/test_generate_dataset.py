@@ -145,6 +145,35 @@ class DatasetGeneratorTests(unittest.TestCase):
             self.assertEqual(config["status"], "completed")
             self.assertGreater(config["example_count"], 0)
 
+    def test_streaming_run_persists_asymmetric_player_configuration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = generate_and_save_run(
+                {
+                    "name": "Asymmetrischer Test",
+                    "difficulty_mode": "asymmetric",
+                    "game_count": 1,
+                    "min_depth": 1,
+                    "max_depth": 1,
+                    "distribution": "uniform",
+                    "player_one_min_depth": 2,
+                    "player_one_max_depth": 2,
+                    "player_one_distribution": "bell",
+                    "player_minus_one_min_depth": 4,
+                    "player_minus_one_max_depth": 4,
+                    "player_minus_one_distribution": "uniform",
+                    "random_first_move": False,
+                    "seed": 1,
+                    "batch_size": 10,
+                },
+                Path(directory),
+                "asymmetric-test",
+            )
+            config = json.loads((run_directory / "config.json").read_text(encoding="utf-8"))
+
+            self.assertEqual(config["difficulty_mode"], "asymmetric")
+            self.assertEqual(config["player_one_distribution"], "bell")
+            self.assertEqual(config["player_minus_one_min_depth"], 4)
+
 
 if __name__ == "__main__":
     unittest.main()
