@@ -220,17 +220,27 @@ function renderDifficultyDistribution(gameSteps, runDistribution, config) {
   const runCounts = Object.fromEntries(
     depths.map((depth) => [depth, Number(runDistribution[String(depth)] || 0)]),
   );
-  const width = 640;
+  const selectedTotal = Object.values(selectedCounts).reduce((sum, count) => sum + count, 0);
+  const runTotal = Object.values(runCounts).reduce((sum, count) => sum + count, 0);
+  const selectedShares = Object.fromEntries(
+    depths.map((depth) => [
+      depth,
+      selectedTotal ? (selectedCounts[depth] / selectedTotal) * 100 : 0,
+    ]),
+  );
+  const runShares = Object.fromEntries(
+    depths.map((depth) => [
+      depth,
+      runTotal ? (runCounts[depth] / runTotal) * 100 : 0,
+    ]),
+  );
+  const width = 700;
   const height = 360;
-  const plotLeft = 58;
-  const plotRight = 620;
+  const plotLeft = 72;
+  const plotRight = 628;
   const plotTop = 55;
   const plotBottom = 300;
   const plotHeight = plotBottom - plotTop;
-  const maxCount = Math.max(
-    1,
-    ...depths.map((depth) => Math.max(selectedCounts[depth], runCounts[depth])),
-  );
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("role", "img");
@@ -248,8 +258,9 @@ function renderDifficultyDistribution(gameSteps, runDistribution, config) {
     svg,
     selectedCounts,
     runCounts,
+    selectedShares,
+    runShares,
     depths,
-    maxCount,
     plotLeft,
     plotRight,
     plotTop,
@@ -263,8 +274,9 @@ function renderDistributionBars(
   svg,
   selectedCounts,
   runCounts,
+  selectedShares,
+  runShares,
   depths,
-  maxCount,
   plotLeft,
   plotRight,
   plotTop,
@@ -276,10 +288,10 @@ function renderDistributionBars(
   const groupWidth = xStep * 0.72;
   const barGap = 3;
   const barWidth = (groupWidth - barGap) / 2;
-  const y = (count) => plotBottom - (count / maxCount) * plotHeight;
+  const y = (share) => plotBottom - (share / 100) * plotHeight;
 
   for (let tick = 0; tick <= 4; tick += 1) {
-    const value = Math.round((maxCount * tick) / 4);
+    const value = tick * 25;
     const yPosition = plotBottom - (plotHeight * tick) / 4;
     const grid = document.createElementNS(namespace, "line");
     grid.setAttribute("x1", String(plotLeft));
@@ -290,44 +302,63 @@ function renderDistributionBars(
     grid.setAttribute("stroke-width", "1");
     svg.appendChild(grid);
     const label = document.createElementNS(namespace, "text");
-    label.setAttribute("x", String(plotLeft - 8));
+    label.setAttribute("x", String(plotLeft - 10));
     label.setAttribute("y", String(yPosition + 4));
     label.setAttribute("text-anchor", "end");
     label.setAttribute("font-size", "11");
-    label.textContent = value;
+    label.textContent = `${value} %`;
     svg.appendChild(label);
+
+    const rightLabel = document.createElementNS(namespace, "text");
+    rightLabel.setAttribute("x", String(plotRight + 10));
+    rightLabel.setAttribute("y", String(yPosition + 4));
+    rightLabel.setAttribute("font-size", "11");
+    rightLabel.textContent = `${value} %`;
+    svg.appendChild(rightLabel);
   }
 
-  const yLabel = document.createElementNS(namespace, "text");
-  yLabel.setAttribute("transform", `translate(15 ${(plotTop + plotBottom) / 2}) rotate(-90)`);
-  yLabel.setAttribute("text-anchor", "middle");
-  yLabel.setAttribute("font-size", "12");
-  yLabel.textContent = "Anzahl Züge";
-  svg.appendChild(yLabel);
+  [
+    ["Tiefe Spiel (%)", 20, "#eb5757"],
+    ["Tiefe Training (%)", 680, "#4a90e2"],
+  ].forEach(([label, xPosition, color]) => {
+    const yLabel = document.createElementNS(namespace, "text");
+    yLabel.setAttribute(
+      "transform",
+      `translate(${xPosition} ${(plotTop + plotBottom) / 2}) rotate(-90)`,
+    );
+    yLabel.setAttribute("text-anchor", "middle");
+    yLabel.setAttribute("font-size", "12");
+    yLabel.setAttribute("fill", color);
+    yLabel.textContent = label;
+    svg.appendChild(yLabel);
+  });
 
   depths.forEach((depth, index) => {
     const groupLeft = plotLeft + index * xStep + (xStep - groupWidth) / 2;
     [
-      [selectedCounts[depth], "#eb5757", "Tiefe Spiel"],
-      [runCounts[depth], "#4a90e2", "Tiefe Training"],
-    ].forEach(([count, color, label], seriesIndex) => {
+      [selectedShares[depth], "#eb5757", "Tiefe Spiel", selectedCounts[depth]],
+      [runShares[depth], "#4a90e2", "Tiefe Training", runCounts[depth]],
+    ].forEach(([share, color, label, count], seriesIndex) => {
       const bar = document.createElementNS(namespace, "rect");
       bar.setAttribute("x", String(groupLeft + seriesIndex * (barWidth + barGap)));
-      bar.setAttribute("y", String(y(count)));
+      bar.setAttribute("y", String(y(share)));
       bar.setAttribute("width", String(barWidth));
-      bar.setAttribute("height", String(plotBottom - y(count)));
+      bar.setAttribute("height", String(plotBottom - y(share)));
       bar.setAttribute("fill", color);
-      bar.setAttribute("aria-label", `${label}, Tiefe ${depth}: ${count}`);
+      bar.setAttribute(
+        "aria-label",
+        `${label}, Tiefe ${depth}: ${share.toFixed(1)} Prozent (${count} Züge)`,
+      );
       svg.appendChild(bar);
       const value = document.createElementNS(namespace, "text");
       value.setAttribute(
         "x",
         String(groupLeft + seriesIndex * (barWidth + barGap) + barWidth / 2),
       );
-      value.setAttribute("y", String(y(count) - 5));
+      value.setAttribute("y", String(y(share) - 5));
       value.setAttribute("text-anchor", "middle");
       value.setAttribute("font-size", "10");
-      value.textContent = count;
+      value.textContent = `${share.toFixed(1)} %`;
       svg.appendChild(value);
     });
     const axisLabel = document.createElementNS(namespace, "text");

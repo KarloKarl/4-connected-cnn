@@ -34,7 +34,8 @@ Tiefe und das Ergebnis der Partie. Ältere Läufe ohne `game`-/`step`-Metadaten
 werden weiterhin automatisch anhand ihrer Brettfolge gruppiert. Zusätzlich
 zeigt das Panel eine gemeinsame Chart-Ansicht: oben die Schwierigkeitsverteilung
 der Züge im gewählten Spiel, darunter die Verteilung aller Züge des gesamten
-Trainingslaufs.
+Trainingslaufs. Beide Reihen werden jeweils auf relative Häufigkeiten
+normalisiert und über getrennte Prozent-Y-Achsen dargestellt.
 
 ## Lokales Spiel
 
