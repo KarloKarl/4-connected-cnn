@@ -99,12 +99,21 @@ function renderTrainingBoard() {
     return;
   }
   const step = trainingSteps[trainingStep];
+  const depthGrid = buildDepthGrid(trainingSteps, trainingStep);
   for (let row = rows - 1; row >= 0; row -= 1) {
     for (let column = 0; column < columns; column += 1) {
       const cell = document.createElement("div");
       cell.className = `cell piece-${step.board[row * columns + column]}`;
       if (column === step.move) {
         cell.classList.add("highlight");
+      }
+      const depth = depthGrid[row][column];
+      if (depth !== null) {
+        const depthLabel = document.createElement("span");
+        depthLabel.className = "stone-depth";
+        depthLabel.textContent = depth;
+        depthLabel.title = `Minimax-Tiefe ${depth}`;
+        cell.appendChild(depthLabel);
       }
       element.appendChild(cell);
     }
@@ -116,6 +125,26 @@ function renderTrainingBoard() {
   next.disabled = trainingStep === trainingSteps.length - 1;
   play.disabled = false;
   play.textContent = trainingTimer ? "Pause" : "Automatisch abspielen";
+}
+
+function buildDepthGrid(steps, visibleStep) {
+  const depthGrid = Array.from(
+    { length: rows },
+    () => Array(columns).fill(null),
+  );
+  for (let index = 0; index < visibleStep; index += 1) {
+    const previousBoard = steps[index].board;
+    const column = steps[index].move;
+    const row = previousBoard.reduce(
+      (occupied, value, boardIndex) =>
+        occupied + (boardIndex % columns === column && value !== 0 ? 1 : 0),
+      0,
+    );
+    if (row < rows) {
+      depthGrid[row][column] = steps[index].depth;
+    }
+  }
+  return depthGrid;
 }
 
 function stopTrainingPlayback() {
@@ -143,7 +172,10 @@ async function loadTrainingGames(runId) {
   trainingGames.forEach((game) => {
     const option = document.createElement("option");
     option.value = game.index;
-    option.textContent = `Spiel ${game.index + 1} (${game.step_count} Schritte)`;
+    const outcome = game.result === 0
+      ? "Unentschieden"
+      : `Spieler ${game.result} gewinnt`;
+    option.textContent = `Spiel ${game.index + 1} · ${outcome} · ${game.step_count} Züge`;
     gameSelect.appendChild(option);
   });
   gameSelect.disabled = trainingGames.length === 0;

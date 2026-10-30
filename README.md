@@ -36,6 +36,9 @@ zeigt das Panel eine gemeinsame Chart-Ansicht: oben die Schwierigkeitsverteilung
 der Züge im gewählten Spiel, darunter die Verteilung aller Züge des gesamten
 Trainingslaufs. Beide Reihen werden jeweils auf relative Häufigkeiten
 normalisiert und über getrennte Prozent-Y-Achsen dargestellt.
+Die Trainingssteine zeigen zusätzlich die Minimax-Tiefe des jeweiligen Zuges;
+die zufällige Eröffnung bleibt ohne Tiefenmarkierung. In der Spielauswahl wird
+das Ergebnis jeder Partie einschließlich Unentschieden angezeigt.
 
 ## Lokales Spiel
 

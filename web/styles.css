@@ -89,6 +89,7 @@ select, button {
 }
 
 .cell {
+  position: relative;
   aspect-ratio: 1;
   border: 0;
   border-radius: 50%;
@@ -98,6 +99,17 @@ select, button {
 
 .cell.piece-1 { background: #f2c94c; }
 .cell.piece--1 { background: #eb5757; }
+
+.stone-depth {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  color: #172033;
+  font-size: clamp(0.65rem, 2vw, 1rem);
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 1px 2px #ffffff99;
+}
 
 .cell.highlight {
   outline: 0.2rem solid #172033;
@@ -174,4 +186,8 @@ select, button {
 
 .training-board {
   background: #315f9f;
+}
+
+#training-game {
+  min-width: min(100%, 22rem);
 }
