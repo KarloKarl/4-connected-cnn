@@ -1,145 +1,29 @@
-> **Transparenzhinweis:** Ab Commit [`e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec`](https://github.com/KarloKarl/4-connected-cnn/commit/e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec) wurde bei Entwicklung, Überarbeitung und Dokumentation dieses Projekts KI eingesetzt.
+> **Transparenzhinweis:** Ab Commit [`e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec`](https://github.com/KarloKarl/4-connected-cnn/commit/e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec) wurde bei Entwicklung, Überarbeitung und Dokumentation dieses Projekts KI eingesetzt. Die Ergebnisse wurden geprüft und verantwortet.
 
-# Connect-Four-Spielalgorithmus
+# Connect Four
 
-Der Dienst berechnet Züge für ein 6x7-Connect-Four-Brett. Zusätzlich gibt
-es lokale und browserbasierte Demonstratoren, in denen Mensch gegen Random
-oder Alpha-Beta-Minimax spielen kann.
+Connect-Four-Spielalgorithmus mit zentraler Spielzustandslogik, Random- und
+Alpha-Beta-Minimax-Strategie, FastAPI-Webapp und Minimax-basiertem
+Datensatzgenerator.
 
-## Browser-Spiel
-
-Server starten:
-
-```powershell
-pipenv run uvicorn main:app --app-dir src --host 127.0.0.1 --port 8093
-```
-
-Danach im Browser öffnen:
-
-```text
-http://127.0.0.1:8093/play
-```
-
-Die Oberfläche hat getrennte Tabs für das Live-Spiel und die Trainingsläufe.
-Algorithmus und Minimax-Schwierigkeit können direkt im Live-Spiel
-ausgewählt werden. Die Weboberfläche bietet die interaktiven Stufen 1 bis 6;
-höhere Tiefen können wegen der längeren Berechnung weiterhin über die
-Konsolen-Demo verwendet werden. Der Browser hält den Spielzustand; der Endpunkt
-`POST /web/move` validiert den menschlichen Zug und berechnet den KI-Zug.
-Die Browserdemo ist getrennt vom Hardware-Endpunkt `POST /updateBoard`.
-
-Unterhalb des Live-Spiels gibt es ein Trainingspanel. Dort können vorhandene
-Läufe ausgewählt, ihre vollständige `config.json` eingesehen und einzelne
-Spiele Schritt für Schritt oder automatisch abgespielt werden. Ein Schritt
-zeigt das gespeicherte spielerrelative Brett, den Minimax-Lehrzug, Spieler,
-Tiefe und das Ergebnis der Partie. Ältere Läufe ohne `game`-/`step`-Metadaten
-werden weiterhin automatisch anhand ihrer Brettfolge gruppiert. Zusätzlich
-zeigt das Panel eine gemeinsame Chart-Ansicht: oben die Schwierigkeitsverteilung
-der Züge im gewählten Spiel, darunter die Verteilung aller Züge des gesamten
-Trainingslaufs. Beide Reihen werden jeweils auf relative Häufigkeiten
-normalisiert und über getrennte Prozent-Y-Achsen dargestellt.
-Die Trainingssteine zeigen zusätzlich die Minimax-Tiefe des jeweiligen Zuges;
-die zufällige Eröffnung bleibt ohne Tiefenmarkierung. In der Spielauswahl wird
-das Ergebnis jeder Partie einschließlich Unentschieden angezeigt.
-Die Trainingsdaten speichern den Brettzustand vor dem Lehrzug. Die Webansicht
-zeigt beim ausgewählten Schritt den Zustand nach diesem Zug, sodass auch der
-letzte Zug und ein dadurch entstandener Gewinn sichtbar sind. Der angezeigte
-Partieausgang bezieht sich weiterhin auf die abgeschlossene Partie.
-Das Trainingspanel ist in die Untertabs „Nachvollziehen“ und „Starten“
-aufgeteilt. Über „Starten“ können neue Datensätze direkt gestartet und benannt
-werden. Dazu werden Name, Spieleanzahl, Tiefenbereich, Tiefenverteilung, Seed
-und Batchgröße eingetragen; der Lauf wird im Hintergrund erzeugt und sein
-Status anschließend im Browser angezeigt.
-Der Schwierigkeitsmodus kann symmetrisch (eine gemeinsame Konfiguration für
-beide Spieler) oder asymmetrisch gewählt werden. Im asymmetrischen Modus
-werden Min-/Max-Tiefe und Verteilung für Spieler 1 und Spieler -1 getrennt
-festgelegt. Die Konfigurationstabelle zeigt diese Werte getrennt; die
-Schwierigkeitsverteilung wird in zwei Diagrammen, jeweils einem pro Spieler,
-dargestellt.
-Die Konfiguration eines ausgewählten Laufs wird im Untertab „Nachvollziehen“
-tabellarisch dargestellt.
-
-## Lokales Spiel
-
-Mit Pipenv:
+## Schnellstart
 
 ```powershell
 pipenv install
-pipenv run python src/play.py --algorithm minimax --difficulty 4
+pipenv run uvicorn main:app --app-dir src --host 127.0.0.1 --port 8094
 ```
 
-Alternativen:
+Anschließend [http://127.0.0.1:8094/play](http://127.0.0.1:8094/play) öffnen.
 
-```powershell
-pipenv run python src/play.py --algorithm random
-pipenv run python src/play.py --algorithm minimax --difficulty 2 --ai-first
-```
+Die Webapp bietet:
 
-`--difficulty` ist die Minimax-Suchtiefe von 1 bis 8. Für Random hat sie
-keinen Einfluss.
+- **Live-Spiel:** Mensch gegen Random oder Minimax (Schwierigkeit 1–6)
+- **Daten generieren:** benannte Datensatzläufe im Hintergrund starten
+- **Nachvollziehen:** Spiele, Züge, Minimax-Tiefen und Ergebnisse analysieren
+- **Symmetrische oder asymmetrische Schwierigkeit:** getrennte Konfigurationen
+  und Verteilungen für Spieler 1 und -1
 
-## Architektur
-
-```text
-src/connect_four.py
-    Immutable GameState und zentrale Spielregeln
-src/algos/
-    random_strategy.py        Zufallsstrategie
-    minimax_strategy.py       Alpha-Beta-Minimax
-src/strategies.py
-    Auswahl der konfigurierten Strategie
-src/play.py
-    lokaler interaktiver Demonstrator
-src/main.py
-    FastAPI-Schnittstelle für Bildverarbeitung und Hardware
-src/board_adapter.py
-    Übersetzung des externen h/r/0-Formats
-src/training/
-    Erzeugung von Minimax-Trainingsdaten
-```
-
-`GameState` speichert die Reihen von unten nach oben. Intern gilt:
-
-```text
-0  = leer
-1  = aktueller eigener Stein
--1 = gegnerischer Stein
-```
-
-Spalten sind intern nullbasiert (`0` bis `6`); der Terminal-Demonstrator
-zeigt sie für Menschen als `1` bis `7`.
-
-## API
-
-Der FastAPI-Dienst läuft standardmäßig auf Port `8093`:
-
-```powershell
-pipenv run uvicorn main:app --app-dir src --host 0.0.0.0 --port 8093
-```
-
-`POST /updateBoard` erwartet die im bisherigen Hardwarevertrag definierte
-Darstellung mit `Column1` bis `Column7`, `Row1` bis `Row6` und `Difficulty`.
-Der berechnete Zug wird an den Hardwaredienst auf Port `8096` weitergegeben.
-
-## Tests
-
-```powershell
-pipenv run python -m unittest discover -s tests -v
-```
-
-Die Tests decken Spielregeln, Strategien, Board-Konvertierung, API-nahe
-Zugauswahl und Trainingsdatenerzeugung ab.
-
-## Trainingsdaten
-
-`src/training/generate_dataset.py` erzeugt Trainingsläufe der Form:
-
-```text
-training/data/{Datum_Uhrzeit}/data.json
-training/data/{Datum_Uhrzeit}/config.json
-```
-
-Beispiel für einen Lauf mit zufälliger Tiefe im Bereich 1 bis 5:
+## Datensätze per CLI
 
 ```powershell
 $env:PYTHONPATH = "src"
@@ -152,39 +36,50 @@ pipenv run python -m training.generate_dataset `
   --seed 42
 ```
 
-Die Ergebnisse werden während der Erzeugung direkt in `data.json` geschrieben
-und standardmäßig alle 100 Beispiele mit `flush()` auf die Festplatte
-übertragen. Die Batchgröße kann mit `--batch-size` angepasst werden. Dadurch
-bleibt der Speicherverbrauch unabhängig von der Gesamtgröße des Datensatzes.
-Während eines laufenden oder abgebrochenen Prozesses ist das JSON-Array noch
-nicht zwingend syntaktisch abgeschlossen; nach einem erfolgreichen Lauf ist
-`data.json` gültiges JSON und `config.json` erhält den Status `completed`.
+Läufe werden standardmäßig unter `data/training/<lauf-id>/` gespeichert:
 
-Mögliche Verteilungen:
+- `data.json`: Trainingsbeispiele
+- `config.json`: vollständige Erzeugungskonfiguration und Status
 
-- `uniform`: Jede Tiefe im Bereich ist gleich wahrscheinlich.
-- `bell`: Tiefen nahe der Mitte des Bereichs sind wahrscheinlicher.
+`uniform` verteilt Tiefen gleichmäßig, `bell` bevorzugt mittlere Tiefen.
+Die Tiefe wird für jeden Minimax-Zug neu gezogen. Der erste Zug ist
+standardmäßig zufällig; mit `--no-random-first-move` wird er deterministisch
+erzeugt.
 
-Der erste Zug jeder Partie ist standardmäßig zufällig und wird nicht als
-Minimax-Lehrerzug gespeichert. Das kann deaktiviert werden:
+## Lokales Terminalspiel
 
 ```powershell
-pipenv run python -m training.generate_dataset --no-random-first-move
+pipenv run python src/play.py --algorithm minimax --difficulty 4
+pipenv run python src/play.py --algorithm random
 ```
 
-Mit `--seed` ist ein Lauf reproduzierbar. `config.json` enthält alle
-Erzeugungsparameter, den Erstellungszeitpunkt und die Anzahl der Beispiele.
-`data.json` enthält pro Beispiel das 42-Felder-Brett, legale Züge, den
-Minimax-Zug, den Spieler, die für diesen Zug gezogene Tiefe und das
-Spielergebnis. Die Minimax-Tiefe wird für jeden Zug neu aus der konfigurierten
-Verteilung gezogen, nicht einmalig pro Partie. Bereits vorhandene Läufe
-wurden noch mit der früheren Partie-Logik erzeugt und müssen für eine
-per-Zug-Verteilung neu generiert werden.
-Generierte Trainingsdaten werden durch `.gitignore` nicht versioniert.
+## Tests
 
-Die Browseransicht liest Läufe über `GET /web/training/runs`; die Spiele und
-Schritte werden über `/web/training/runs/{run_id}/games` und
-`/web/training/runs/{run_id}/games/{game_index}` geladen.
+```powershell
+$env:PYTHONPATH = "src"
+pipenv run python -m unittest discover -s tests -v
+```
 
-Das ist die Grundlage für ein späteres CNN oder ViT. Die historischen
-Notebook-/Datendateien unter `src/algos/` sind nicht Teil des Laufzeitpfads.
+## Struktur
+
+```text
+src/connect_four.py              Spielzustand und Regeln
+src/algos/                       Random und Alpha-Beta-Minimax
+src/training/generate_dataset.py Datensatzgenerator
+src/training/viewer.py           Trainingslauf-Auswertung
+src/main.py                      FastAPI-Webapp und API
+web/                             HTML, JavaScript und CSS
+tests/                           Unit- und API-Tests
+```
+
+## API
+
+- `GET /play` – Webapp
+- `POST /web/move` – Live-Spielzug
+- `POST /web/training/runs` – Datensatzlauf starten
+- `GET /web/training/runs` – Läufe auflisten
+- `GET /web/training/runs/{run_id}/status` – Laufstatus
+- `GET /web/training/runs/{run_id}/games` – Spiele eines Laufs
+- `GET /web/training/runs/{run_id}/games/{game_index}` – Spielschritte
+- `POST /updateBoard` – bestehende Hardware-Schnittstelle
+
