@@ -55,13 +55,13 @@ def iter_game_examples(
     rng = random.Random(seed)
     for game_index in range(game_count):
         state = GameState.initial()
-        depth = choose_depth(min_depth, max_depth, distribution, rng)
         if random_first_move:
             state = state.drop_piece(rng.choice(state.legal_moves()))
-        strategy = MinimaxStrategy(depth=depth)
         game_examples = []
 
         while not state.is_terminal():
+            depth = choose_depth(min_depth, max_depth, distribution, rng)
+            strategy = MinimaxStrategy(depth=depth)
             move = strategy.choose_move(state)
             game_examples.append(
                 {

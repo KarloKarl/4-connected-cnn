@@ -26,6 +26,17 @@ class DatasetGeneratorTests(unittest.TestCase):
             self.assertIn(example["result"], (-1, 0, 1))
             self.assertIn(example["depth"], (1, 2))
 
+    def test_depth_is_sampled_per_move(self):
+        examples = generate_games(
+            game_count=1,
+            min_depth=1,
+            max_depth=2,
+            random_first_move=False,
+            seed=1,
+        )
+
+        self.assertGreater(len({example["depth"] for example in examples}), 1)
+
     def test_writes_json_lines(self):
         examples = generate_games(game_count=1, min_depth=1, seed=1)[:1]
         with tempfile.TemporaryDirectory() as directory:
