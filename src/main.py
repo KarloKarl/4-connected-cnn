@@ -1,14 +1,13 @@
-import json
-
-from algos import Minimax
-
-import uvicorn
 import requests
+import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from algos.minimax_strategy import MinimaxStrategy
+from board_adapter import api_move, state_from_api_rows
+from connect_four import PLAYER_ONE, PLAYER_TWO
+
 import logging
-import json
 
 # logging
 LOG = "logging_data.log"
@@ -63,8 +62,6 @@ class Board(BaseModel):
 
 app = FastAPI()
 
-board = [["0"] * 7 for i in range(6)]
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -77,62 +74,36 @@ async def calculateMove():
 
 @app.post("/updateBoard")
 async def updateBoard(newBoard: Board):
-    # import board
-    pb = newBoard
+    rows = [
+        [
+            getattr(getattr(newBoard, f"Column{column}"), f"Row{row}")
+            for column in range(1, 8)
+        ]
+        for row in range(1, 7)
+    ]
+    state = state_from_api_rows(rows, PLAYER_ONE)
+    logging.info(str(state))
 
-    logging.info(str(pb))
+    winner = state.winner()
+    if winner == PLAYER_TWO:
+        requests.post(target_ip + ':8096/end', json={"winner": "HUMAN"})
+        return {}
+    if winner == PLAYER_ONE:
+        requests.post(target_ip + ':8096/end', json={"winner": "ROBOT"})
+        return {}
+    if not state.legal_moves():
+        requests.post(target_ip + ':8096/end', json={"winner": "DRAW"})
+        return {}
 
-    # convert to internal format
-    board[0] = [pb.Column1.Row1, pb.Column2.Row1, pb.Column3.Row1, pb.Column4.Row1,
-                pb.Column5.Row1, pb.Column6.Row1, pb.Column7.Row1]
-    board[1] = [pb.Column1.Row2, pb.Column2.Row2, pb.Column3.Row2, pb.Column4.Row2,
-                pb.Column5.Row2, pb.Column6.Row2, pb.Column7.Row2]
-    board[2] = [pb.Column1.Row3, pb.Column2.Row3, pb.Column3.Row3, pb.Column4.Row3,
-                pb.Column5.Row3, pb.Column6.Row3, pb.Column7.Row3]
-    board[3] = [pb.Column1.Row4, pb.Column2.Row4, pb.Column3.Row4, pb.Column4.Row4,
-                pb.Column5.Row4, pb.Column6.Row4, pb.Column7.Row4]
-    board[4] = [pb.Column1.Row5, pb.Column2.Row5, pb.Column3.Row5, pb.Column4.Row5,
-                pb.Column5.Row5, pb.Column6.Row5, pb.Column7.Row5]
-    board[5] = [pb.Column1.Row6, pb.Column2.Row6, pb.Column3.Row6, pb.Column4.Row6,
-                pb.Column5.Row6, pb.Column6.Row6, pb.Column7.Row6]
+    move_col = MinimaxStrategy(newBoard.Difficulty).choose_move(state)
+    move_col, move_row = api_move(state, move_col)
+    requests.post(target_ip + ':8096/move', json={"col": move_col, "row": move_row})
 
-    print(board)
-
-    # run minimax
-    mini = Minimax.Minimax(board, newBoard.Difficulty)
-    moveCol, moveRow, winner = mini.choose_column(board)
-
-    if winner == "NONE":
-        # Spiel geht weiter
-
-        # send move to robot service
-        # positionToSend = '{"row": ' + str(moveCol) + ', "col": ' + str(moveRow) + '}'
-        # positionToSend = json.loads(positionToSend)
-        r = requests.post(target_ip + ':8096/move', json={"col": moveCol, "row": moveRow})
-        pass
-        # "col": +str(moveCol) + 1, "row": + str(moveRow) + 1
-    else:
-        # SPIELENDE
-        print("Ende")
-        if winner == "DRAW":
-            # DRAW
-            # draw could have happened at either turn so we have to decide if we still have to make the robot move
-            if moveCol is not None:
-                r = requests.post(target_ip + ':8096/move', json={"col": moveCol, "row": moveRow})
-
-            r = requests.post(target_ip + ':8096/end', json={"winner": "DRAW"})
-            pass
-        elif winner == "ROBOT":
-            # WIN ROBOT
-            # make last move AND win
-            r = requests.post(target_ip + ':8096/move', json={"col": moveCol, "row": moveRow})
-            r = requests.post(target_ip + ':8096/end', json={"winner": "ROBOT"})
-            pass
-        else:
-            # WIN HUMAN
-            # do not make a move AND win
-            r = requests.post(target_ip + ':8096/end', json={"winner": "HUMAN"})
-            pass
+    next_state = state.drop_piece(move_col)
+    if next_state.winner() == PLAYER_ONE:
+        requests.post(target_ip + ':8096/end', json={"winner": "ROBOT"})
+    elif next_state.is_draw():
+        requests.post(target_ip + ':8096/end', json={"winner": "DRAW"})
     return {}
 
 
