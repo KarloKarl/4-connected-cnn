@@ -1,4 +1,4 @@
-> **Transparenzhinweis:** Ab Commit [`e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec`](https://github.com/KarloKarl/4-connected-cnn/commit/e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec) wurde bei Entwicklung, Überarbeitung und Dokumentation dieses Projekts KI eingesetzt. Die Ergebnisse wurden geprüft und verantwortet.
+> **Transparenzhinweis:** Ab Commit [`e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec`](https://github.com/KarloKarl/4-connected-cnn/commit/e654e0192c1b8f0d31c2220e9bd7c60fba5b66ec) wurde bei Entwicklung, Überarbeitung und Dokumentation dieses Projekts KI eingesetzt.
 
 # Connect Four
 
