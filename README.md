@@ -50,6 +50,10 @@ aufgeteilt. Über „Starten“ können neue Datensätze direkt gestartet und be
 werden. Dazu werden Name, Spieleanzahl, Tiefenbereich, Tiefenverteilung, Seed
 und Batchgröße eingetragen; der Lauf wird im Hintergrund erzeugt und sein
 Status anschließend im Browser angezeigt.
+Der Schwierigkeitsmodus kann symmetrisch (eine gemeinsame Konfiguration für
+beide Spieler) oder asymmetrisch gewählt werden. Im asymmetrischen Modus
+werden Min-/Max-Tiefe und Verteilung für Spieler 1 und Spieler -1 getrennt
+festgelegt.
 Die Konfiguration eines ausgewählten Laufs wird im Untertab „Nachvollziehen“
 tabellarisch dargestellt.
 

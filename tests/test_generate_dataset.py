@@ -37,6 +37,24 @@ class DatasetGeneratorTests(unittest.TestCase):
 
         self.assertGreater(len({example["depth"] for example in examples}), 1)
 
+    def test_asymmetric_depths_follow_the_current_player(self):
+        examples = generate_games(
+            game_count=1,
+            min_depth=1,
+            max_depth=1,
+            random_first_move=False,
+            player_configs={
+                1: {"min_depth": 2, "max_depth": 2, "distribution": "uniform"},
+                -1: {"min_depth": 4, "max_depth": 4, "distribution": "uniform"},
+            },
+            seed=1,
+        )
+
+        self.assertTrue(examples)
+        for example in examples:
+            expected_depth = 2 if example["player"] == 1 else 4
+            self.assertEqual(example["depth"], expected_depth)
+
     def test_writes_json_lines(self):
         examples = generate_games(game_count=1, min_depth=1, seed=1)[:1]
         with tempfile.TemporaryDirectory() as directory:

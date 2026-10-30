@@ -8,6 +8,17 @@ from main import TrainingRunRequest, WebMoveRequest, start_training_run, web_mov
 
 
 class WebApiTests(unittest.TestCase):
+    def test_training_run_rejects_invalid_asymmetric_depth_range(self):
+        with self.assertRaises(HTTPException) as context:
+            asyncio.run(start_training_run(
+                TrainingRunRequest(
+                    difficulty_mode="asymmetric",
+                    player_one_min_depth=6,
+                    player_one_max_depth=3,
+                ),
+            ))
+        self.assertEqual(context.exception.status_code, 422)
+
     def test_training_run_name_accepts_bounded_text(self):
         request = TrainingRunRequest(name="  Mein Lauf  ")
 

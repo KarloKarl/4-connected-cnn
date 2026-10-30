@@ -38,10 +38,9 @@
     </section>
     <section id="training-tab" class="tab-content">
       <section class="panel training-panel">
-        <h2>Trainingsläufe nachvollziehen</h2>
       <nav class="tabs training-tabs" aria-label="Trainingsansichten">
-        <button class="tab training-subtab active" type="button" data-training-tab="view">Nachvollziehen</button>
         <button class="tab training-subtab" type="button" data-training-tab="start">Starten</button>
+        <button class="tab training-subtab active" type="button" data-training-tab="view">Nachvollziehen</button>
       </nav>
       <section id="training-view-tab" class="subtab-content active">
       <div class="training-controls">
@@ -80,24 +79,64 @@
           <label>Spiele
             <input id="training-games" type="number" min="1" max="10000" value="10" required>
           </label>
-          <label>Min. Tiefe
-            <input id="training-min-depth" type="number" min="1" max="8" value="1" required>
-          </label>
-          <label>Max. Tiefe
-            <input id="training-max-depth" type="number" min="1" max="8" value="5" required>
-          </label>
-          <label>Verteilung
-            <select id="training-distribution">
-              <option value="uniform">Uniform</option>
-              <option value="bell">Glockenkurve</option>
-            </select>
-          </label>
+          <div id="training-symmetric-config" class="symmetric-config">
+            <label>Min. Tiefe
+              <input id="training-min-depth" type="number" min="1" max="8" value="1" required>
+            </label>
+            <label>Max. Tiefe
+              <input id="training-max-depth" type="number" min="1" max="8" value="5" required>
+            </label>
+            <label>Verteilung
+              <select id="training-distribution">
+                <option value="uniform">Uniform</option>
+                <option value="bell">Glockenkurve</option>
+              </select>
+            </label>
+          </div>
           <label>Batchgröße
             <input id="training-batch-size" type="number" min="1" max="10000" value="100" required>
           </label>
           <label>Seed
             <input id="training-seed" type="number" placeholder="optional">
           </label>
+        </div>
+        <label>Schwierigkeitsmodus
+          <select id="training-difficulty-mode">
+            <option value="symmetric">Symmetrisch (beide Spieler gleich)</option>
+            <option value="asymmetric">Asymmetrisch (pro Spieler)</option>
+          </select>
+        </label>
+        <div id="training-player-configs" class="player-configs" hidden>
+          <fieldset>
+            <legend>Spieler 1</legend>
+            <label>Min. Tiefe
+              <input id="training-player-one-min-depth" type="number" min="1" max="8" value="1">
+            </label>
+            <label>Max. Tiefe
+              <input id="training-player-one-max-depth" type="number" min="1" max="8" value="5">
+            </label>
+            <label>Verteilung
+              <select id="training-player-one-distribution">
+                <option value="uniform">Uniform</option>
+                <option value="bell">Glockenkurve</option>
+              </select>
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Spieler -1</legend>
+            <label>Min. Tiefe
+              <input id="training-player-minus-one-min-depth" type="number" min="1" max="8" value="1">
+            </label>
+            <label>Max. Tiefe
+              <input id="training-player-minus-one-max-depth" type="number" min="1" max="8" value="5">
+            </label>
+            <label>Verteilung
+              <select id="training-player-minus-one-distribution">
+                <option value="uniform">Uniform</option>
+                <option value="bell">Glockenkurve</option>
+              </select>
+            </label>
+          </fieldset>
         </div>
         <label class="checkbox-label">
           <input id="training-random-first-move" type="checkbox" checked>

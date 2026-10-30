@@ -10,6 +10,7 @@ from algos.minimax_strategy import MinimaxStrategy
 from connect_four import GameState
 
 Distribution = Literal["uniform", "bell"]
+PlayerConfig = Dict[str, Union[str, int]]
 
 
 def encode_state(state: GameState) -> List[int]:
@@ -46,6 +47,7 @@ def iter_game_examples(
     distribution: Distribution = "uniform",
     random_first_move: bool = True,
     seed: Optional[int] = None,
+    player_configs: Optional[Dict[int, PlayerConfig]] = None,
 ) -> Iterator[Dict]:
     if game_count < 1:
         raise ValueError("game_count must be at least 1")
@@ -60,7 +62,20 @@ def iter_game_examples(
         game_examples = []
 
         while not state.is_terminal():
-            depth = choose_depth(min_depth, max_depth, distribution, rng)
+            settings = (player_configs or {}).get(
+                state.current_player,
+                {
+                    "min_depth": min_depth,
+                    "max_depth": max_depth,
+                    "distribution": distribution,
+                },
+            )
+            depth = choose_depth(
+                int(settings["min_depth"]),
+                int(settings["max_depth"]),
+                str(settings["distribution"]),  # type: ignore[arg-type]
+                rng,
+            )
             strategy = MinimaxStrategy(depth=depth)
             move = strategy.choose_move(state)
             game_examples.append(
@@ -89,6 +104,7 @@ def generate_games(
     distribution: Distribution = "uniform",
     random_first_move: bool = True,
     seed: Optional[int] = None,
+    player_configs: Optional[Dict[int, PlayerConfig]] = None,
 ) -> List[Dict]:
     """Generate all examples in memory; use ``generate_and_save_run`` for large runs."""
     return list(
@@ -99,6 +115,7 @@ def generate_games(
             distribution,
             random_first_move,
             seed,
+            player_configs,
         )
     )
 
@@ -197,6 +214,22 @@ def generate_and_save_run(
         distribution=config["distribution"],  # type: ignore[arg-type]
         random_first_move=bool(config["random_first_move"]),
         seed=config.get("seed"),  # type: ignore[arg-type]
+        player_configs=(
+            {
+                1: {
+                    "min_depth": int(config["player_one_min_depth"]),
+                    "max_depth": int(config["player_one_max_depth"]),
+                    "distribution": str(config["player_one_distribution"]),
+                },
+                -1: {
+                    "min_depth": int(config["player_minus_one_min_depth"]),
+                    "max_depth": int(config["player_minus_one_max_depth"]),
+                    "distribution": str(config["player_minus_one_distribution"]),
+                },
+            }
+            if str(config.get("difficulty_mode", "symmetric")) == "asymmetric"
+            else None
+        ),
     )
     count = write_dataset_stream(examples, run_directory / "data.json", batch_size)
     stored_config.update({"status": "completed", "example_count": count})

@@ -98,6 +98,7 @@ class WebMoveResponse(BaseModel):
 
 class TrainingRunRequest(BaseModel):
     name: str = Field(default="Trainingslauf", min_length=1, max_length=80)
+    difficulty_mode: Literal["symmetric", "asymmetric"] = "symmetric"
     game_count: int = Field(default=10, ge=1, le=10000)
     min_depth: int = Field(default=1, ge=1, le=8)
     max_depth: int = Field(default=5, ge=1, le=8)
@@ -105,6 +106,12 @@ class TrainingRunRequest(BaseModel):
     random_first_move: bool = True
     seed: Optional[int] = None
     batch_size: int = Field(default=100, ge=1, le=10000)
+    player_one_min_depth: int = Field(default=1, ge=1, le=8)
+    player_one_max_depth: int = Field(default=5, ge=1, le=8)
+    player_one_distribution: Literal["uniform", "bell"] = "uniform"
+    player_minus_one_min_depth: int = Field(default=1, ge=1, le=8)
+    player_minus_one_max_depth: int = Field(default=5, ge=1, le=8)
+    player_minus_one_distribution: Literal["uniform", "bell"] = "uniform"
 
 
 @app.get("/play")
@@ -149,6 +156,11 @@ async def start_training_run(request: TrainingRunRequest) -> Dict:
             status_code=422,
             detail="max_depth muss mindestens min_depth entsprechen",
         )
+    if request.difficulty_mode == "asymmetric":
+        if request.player_one_max_depth < request.player_one_min_depth:
+            raise HTTPException(status_code=422, detail="Spieler 1: Max. Tiefe muss mindestens Min. Tiefe entsprechen")
+        if request.player_minus_one_max_depth < request.player_minus_one_min_depth:
+            raise HTTPException(status_code=422, detail="Spieler -1: Max. Tiefe muss mindestens Min. Tiefe entsprechen")
     name = request.name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="name darf nicht leer sein")

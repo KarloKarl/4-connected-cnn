@@ -251,6 +251,7 @@ function renderTrainingConfig(config) {
   const fields = [
     ["Name", config.name ?? "-"],
     ["Status", config.status],
+    ["Schwierigkeitsmodus", config.difficulty_mode === "asymmetric" ? "Asymmetrisch" : "Symmetrisch"],
     ["Spiele", config.game_count],
     ["Beispiele", config.example_count],
     ["Tiefenbereich", `${config.min_depth} bis ${config.max_depth}`],
@@ -259,6 +260,14 @@ function renderTrainingConfig(config) {
     ["Batchgröße", config.batch_size],
     ["Seed", config.seed ?? "-"],
   ];
+  if (config.difficulty_mode === "asymmetric") {
+    fields.push(
+      ["Spieler 1 Tiefe", `${config.player_one_min_depth} bis ${config.player_one_max_depth}`],
+      ["Spieler 1 Verteilung", config.player_one_distribution],
+      ["Spieler -1 Tiefe", `${config.player_minus_one_min_depth} bis ${config.player_minus_one_max_depth}`],
+      ["Spieler -1 Verteilung", config.player_minus_one_distribution],
+    );
+  }
   const table = document.createElement("table");
   table.className = "config-table";
   const caption = document.createElement("caption");
@@ -509,6 +518,7 @@ async function startTrainingRun(event) {
   const seed = trainingFormValue("training-seed");
   const payload = {
     name: trainingFormValue("training-name").trim(),
+    difficulty_mode: trainingFormValue("training-difficulty-mode"),
     game_count: Number(trainingFormValue("training-games")),
     min_depth: Number(trainingFormValue("training-min-depth")),
     max_depth: Number(trainingFormValue("training-max-depth")),
@@ -516,6 +526,12 @@ async function startTrainingRun(event) {
     random_first_move: document.querySelector("#training-random-first-move").checked,
     seed: seed === "" ? null : Number(seed),
     batch_size: Number(trainingFormValue("training-batch-size")),
+    player_one_min_depth: Number(trainingFormValue("training-player-one-min-depth")),
+    player_one_max_depth: Number(trainingFormValue("training-player-one-max-depth")),
+    player_one_distribution: trainingFormValue("training-player-one-distribution"),
+    player_minus_one_min_depth: Number(trainingFormValue("training-player-minus-one-min-depth")),
+    player_minus_one_max_depth: Number(trainingFormValue("training-player-minus-one-max-depth")),
+    player_minus_one_distribution: trainingFormValue("training-player-minus-one-distribution"),
   };
   button.disabled = true;
   status.textContent = "Trainingslauf wird gestartet ...";
@@ -537,6 +553,12 @@ async function startTrainingRun(event) {
   } finally {
     button.disabled = false;
   }
+}
+
+function updateDifficultyMode() {
+  const asymmetric = trainingFormValue("training-difficulty-mode") === "asymmetric";
+  document.querySelector("#training-player-configs").hidden = !asymmetric;
+  document.querySelector("#training-symmetric-config").hidden = asymmetric;
 }
 
 async function pollTrainingRun(runId) {
@@ -567,6 +589,8 @@ document.querySelector("#training-run").addEventListener("change", (event) => {
   loadTrainingGames(event.target.value);
 });
 document.querySelector("#training-generator").addEventListener("submit", startTrainingRun);
+document.querySelector("#training-difficulty-mode").addEventListener("change", updateDifficultyMode);
+updateDifficultyMode();
 document.querySelector("#training-game").addEventListener("change", (event) => {
   loadTrainingGame(document.querySelector("#training-run").value, Number(event.target.value));
 });
