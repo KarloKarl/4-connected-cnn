@@ -171,25 +171,45 @@ select, button {
 }
 
 .config {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 0.6rem;
   margin: 1rem auto;
+  max-width: 42rem;
   text-align: left;
 }
 
-.config-item {
-  display: grid;
-  gap: 0.15rem;
-  padding: 0.65rem 0.75rem;
-  background: #eef2f7;
-  border-left: 0.25rem solid #4a90e2;
-  border-radius: 0.4rem;
+.config-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #f6f8fb;
+  border: 1px solid #d5dce7;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-.config-label {
+.config-table caption {
+  padding: 0.65rem 0.75rem;
+  background: #eef2f7;
+  color: #172033;
+  font-weight: 700;
+  text-align: left;
+}
+
+.config-table th,
+.config-table td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid #d5dce7;
+}
+
+.config-table th {
+  width: 45%;
   color: #536176;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.config-table td {
+  color: #172033;
+  font-weight: 600;
 }
 
 .piece-legend {

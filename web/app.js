@@ -259,17 +259,24 @@ function renderTrainingConfig(config) {
     ["Batchgröße", config.batch_size],
     ["Seed", config.seed ?? "-"],
   ];
+  const table = document.createElement("table");
+  table.className = "config-table";
+  const caption = document.createElement("caption");
+  caption.textContent = "Trainingskonfiguration";
+  table.appendChild(caption);
+  const body = document.createElement("tbody");
   fields.forEach(([label, value]) => {
-    const item = document.createElement("div");
-    item.className = "config-item";
-    const name = document.createElement("span");
-    name.className = "config-label";
+    const row = document.createElement("tr");
+    const name = document.createElement("th");
+    name.scope = "row";
     name.textContent = label;
-    const content = document.createElement("strong");
+    const content = document.createElement("td");
     content.textContent = value;
-    item.append(name, content);
-    element.appendChild(item);
+    row.append(name, content);
+    body.appendChild(row);
   });
+  table.appendChild(body);
+  element.appendChild(table);
 }
 
 function renderDifficultyDistribution(gameSteps, runDistribution, config) {

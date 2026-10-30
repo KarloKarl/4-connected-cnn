@@ -50,6 +50,8 @@ aufgeteilt. Über „Starten“ können neue Datensätze direkt gestartet und be
 werden. Dazu werden Name, Spieleanzahl, Tiefenbereich, Tiefenverteilung, Seed
 und Batchgröße eingetragen; der Lauf wird im Hintergrund erzeugt und sein
 Status anschließend im Browser angezeigt.
+Die Konfiguration eines ausgewählten Laufs wird im Untertab „Nachvollziehen“
+tabellarisch dargestellt.
 
 ## Lokales Spiel
 
