@@ -11,7 +11,7 @@
     <h1>Vier gewinnt</h1>
     <nav class="tabs" aria-label="Ansichten">
       <button class="tab main-tab active" type="button" data-tab="live">Live-Spiel</button>
-      <button class="tab main-tab" type="button" data-tab="training">Trainingsläufe</button>
+      <button class="tab main-tab" type="button" data-tab="training">Trainingsdaten</button>
     </nav>
     <section id="live-tab" class="tab-content active">
       <section class="panel">
@@ -39,7 +39,7 @@
     <section id="training-tab" class="tab-content">
       <section class="panel training-panel">
       <nav class="tabs training-tabs" aria-label="Trainingsansichten">
-        <button class="tab training-subtab" type="button" data-training-tab="start">Starten</button>
+        <button class="tab training-subtab" type="button" data-training-tab="start">Daten Generieren</button>
         <button class="tab training-subtab active" type="button" data-training-tab="view">Nachvollziehen</button>
       </nav>
       <section id="training-view-tab" class="subtab-content active">
@@ -101,7 +101,7 @@
             <label>Verteilung
               <select id="training-distribution">
                 <option value="uniform">Uniform</option>
-                <option value="bell">Glockenkurve</option>
+                <option value="bell">Gaussian</option>
               </select>
             </label>
           </div>
