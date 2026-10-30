@@ -168,51 +168,105 @@ async function loadTrainingGame(runId, index) {
   document.querySelector("#training-config").textContent =
     JSON.stringify(result.config, null, 2);
   renderDifficultyDistribution(
+    trainingSteps,
     result.game_difficulty_distribution,
-    result.difficulty_distribution,
+    result.config,
   );
   renderTrainingBoard();
 }
 
-function renderDifficultyDistribution(gameDistribution, exampleDistribution) {
+function renderDifficultyDistribution(gameSteps, runDistribution, config) {
   const element = document.querySelector("#training-distribution");
   element.replaceChildren();
-  const gameEntries = Object.entries(gameDistribution || {});
-  const exampleEntries = Object.entries(exampleDistribution || {});
-  if (!gameEntries.length && !exampleEntries.length) {
+  const minimum = Number(config.min_depth);
+  const maximum = Number(config.max_depth);
+  const depths = Array.from(
+    { length: maximum - minimum + 1 },
+    (_, index) => minimum + index,
+  );
+  if (!depths.length) {
     element.textContent = "Keine Schwierigkeitsdaten vorhanden.";
     return;
   }
-  const heading = document.createElement("strong");
-  heading.textContent = "Tatsächliche Verteilung der Schwierigkeitsstufen";
-  element.appendChild(heading);
-  renderDistributionRows(element, "Partien", gameEntries);
-  renderDistributionRows(element, "Trainingsbeispiele", exampleEntries);
+  const selectedCounts = Object.fromEntries(depths.map((depth) => [depth, 0]));
+  gameSteps.forEach((step) => {
+    selectedCounts[step.depth] = (selectedCounts[step.depth] || 0) + 1;
+  });
+  const runCounts = Object.fromEntries(
+    depths.map((depth) => [depth, Number(runDistribution[String(depth)] || 0)]),
+  );
+  const maxCount = Math.max(
+    1,
+    ...depths.map((depth) => Math.max(selectedCounts[depth], runCounts[depth])),
+  );
+  const width = 640;
+  const height = 300;
+  const plotLeft = 52;
+  const plotRight = 620;
+  const plotWidth = plotRight - plotLeft;
+  const plotHeight = 82;
+  const x = (index) => plotLeft + (index * plotWidth) / Math.max(1, depths.length - 1);
+  const y = (count, top) => top + plotHeight - (count / maxCount) * plotHeight;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute(
+    "aria-label",
+    "Verteilung der Minimax-Suchtiefen im gewählten Spiel und Trainingslauf",
+  );
+  const title = document.createElementNS(svg.namespaceURI, "text");
+  title.setAttribute("x", "52");
+  title.setAttribute("y", "20");
+  title.setAttribute("font-weight", "600");
+  title.textContent = "Schwierigkeitsverteilung";
+  svg.appendChild(title);
+  renderDistributionPlot(
+    svg, "Gewähltes Spiel", "Schritte", selectedCounts, depths, x, y, 35, "#eb5757",
+  );
+  renderDistributionPlot(
+    svg, "Gesamter Trainingslauf", "Partien", runCounts, depths, x, y, 160, "#4a90e2",
+  );
+  element.appendChild(svg);
 }
 
-function renderDistributionRows(element, label, entries) {
-  if (!entries.length) {
-    return;
-  }
-  const total = entries.reduce((sum, [, count]) => sum + count, 0);
-  const subheading = document.createElement("div");
-  subheading.textContent = `${label} (gesamt: ${total})`;
-  subheading.className = "distribution-label";
-  element.appendChild(subheading);
-  const maxCount = Math.max(...entries.map(([, count]) => count));
-  entries.forEach(([depth, count]) => {
-    const row = document.createElement("div");
-    row.className = "distribution-row";
-    const label = document.createElement("span");
-    label.textContent = `Tiefe ${depth}`;
-    const bar = document.createElement("div");
-    bar.className = "distribution-bar";
-    bar.style.width = `${(count / maxCount) * 100}%`;
-    bar.title = `${count} von ${total} Beispielen`;
-    const value = document.createElement("span");
-    value.textContent = `${count} (${((count / total) * 100).toFixed(1)} %)`;
-    row.append(label, bar, value);
-    element.appendChild(row);
+function renderDistributionPlot(svg, label, unit, counts, depths, x, y, top, color) {
+  const namespace = svg.namespaceURI;
+  const baseline = document.createElementNS(namespace, "line");
+  baseline.setAttribute("x1", "52");
+  baseline.setAttribute("x2", "620");
+  baseline.setAttribute("y1", String(top + 102));
+  baseline.setAttribute("y2", String(top + 102));
+  baseline.setAttribute("stroke", "#9aa7b8");
+  svg.appendChild(baseline);
+  const heading = document.createElementNS(namespace, "text");
+  heading.setAttribute("x", "52");
+  heading.setAttribute("y", String(top + 14));
+  heading.setAttribute("font-size", "13");
+  heading.textContent = `${label} (Anzahl ${unit})`;
+  svg.appendChild(heading);
+  const points = depths.map((depth, index) => `${x(index)},${y(counts[depth], top + 20)}`).join(" ");
+  const line = document.createElementNS(namespace, "polyline");
+  line.setAttribute("points", points);
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", color);
+  line.setAttribute("stroke-width", "3");
+  line.setAttribute("stroke-linejoin", "round");
+  svg.appendChild(line);
+  depths.forEach((depth, index) => {
+    const point = document.createElementNS(namespace, "circle");
+    point.setAttribute("cx", String(x(index)));
+    point.setAttribute("cy", String(y(counts[depth], top + 20)));
+    point.setAttribute("r", "5");
+    point.setAttribute("fill", color);
+    point.setAttribute("aria-label", `Tiefe ${depth}: ${counts[depth]}`);
+    svg.appendChild(point);
+    const axisLabel = document.createElementNS(namespace, "text");
+    axisLabel.setAttribute("x", String(x(index)));
+    axisLabel.setAttribute("y", String(top + 120));
+    axisLabel.setAttribute("text-anchor", "middle");
+    axisLabel.setAttribute("font-size", "12");
+    axisLabel.textContent = depth;
+    svg.appendChild(axisLabel);
   });
 }
 
