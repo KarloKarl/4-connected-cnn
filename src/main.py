@@ -355,7 +355,7 @@ class TrainingRunRequest(BaseModel):
     response_class=FileResponse,
 )
 async def web_game() -> FileResponse:
-    return FileResponse(WEB_INDEX)
+    return FileResponse(WEB_INDEX, headers={"Cache-Control": "no-store"})
 
 
 def training_run_directory(run_id: str) -> Path:
