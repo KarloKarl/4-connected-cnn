@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 
 from training.generate_dataset import (
+    depth_target,
     generate_and_save_run,
     generate_games,
     main,
@@ -16,6 +17,25 @@ from training.generate_dataset import (
 
 
 class DatasetGeneratorTests(unittest.TestCase):
+    def test_depth_target_rewards_faster_wins_and_delayed_losses(self):
+        self.assertGreater(depth_target(1, 1, 2, 0.1), depth_target(1, 1, 6, 0.1))
+        self.assertGreater(depth_target(-1, 1, 6, 0.1), depth_target(-1, 1, 2, 0.1))
+        self.assertEqual(depth_target(0, 1, 6, 0.1), 0.0)
+
+    def test_depth_target_is_stored_in_examples_when_enabled(self):
+        examples = generate_games(
+            game_count=1,
+            min_depth=1,
+            max_depth=1,
+            random_first_move=False,
+            seed=1,
+            depth_heuristic=True,
+            depth_penalty=0.01,
+        )
+
+        self.assertTrue(examples)
+        self.assertTrue(all("target" in example for example in examples))
+        self.assertTrue(all(-1 <= example["target"] <= 1 for example in examples))
     def test_examples_contain_legal_teacher_moves(self):
         examples = generate_games(game_count=1, min_depth=1, max_depth=2, seed=1)
 
@@ -125,6 +145,8 @@ class DatasetGeneratorTests(unittest.TestCase):
                     "--batch-size", "2",
                     "--heuristic", "ws22_window",
                     "--tree-learning",
+                    "--depth-heuristic",
+                    "--depth-penalty", "0.02",
                     "--output-root", directory,
                     "--timestamp", "cli-test",
                 ]
@@ -137,6 +159,8 @@ class DatasetGeneratorTests(unittest.TestCase):
             self.assertEqual(config["batch_size"], 2)
             self.assertEqual(config["heuristic"], "ws22_window")
             self.assertTrue(config["tree_learning"])
+            self.assertTrue(config["depth_heuristic"])
+            self.assertEqual(config["depth_penalty"], 0.02)
 
     def test_stream_writer_creates_valid_json_in_batches(self):
         examples = iter({"index": index} for index in range(5))

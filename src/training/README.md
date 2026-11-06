@@ -28,6 +28,14 @@ Alpha-Beta-Cutoffs markiert `exact: false`, dass der Wert eine Schranke ist.
 Die Option ist standardmäßig deaktiviert, damit bestehende Datensätze und
 Dateigrößen unverändert bleiben.
 
+Mit `depth_heuristic=True` beziehungsweise `--depth-heuristic` wird zusätzlich
+zu `result` ein spielerrelativer `target` gespeichert. Der Zielwert liegt
+zwischen `-1` und `1`: Ein schneller Sieg liegt näher bei `1`, eine
+hinausgezögerte Niederlage näher bei `0` als eine sofortige Niederlage.
+`depth_penalty` beziehungsweise `--depth-penalty` definiert den Abzug pro
+verbleibendem Zug und hat standardmäßig den Wert `0.01`. `result` bleibt
+unverändert und kann weiterhin als binäres Partiefazit verwendet werden.
+
 ## CLI
 
 ```powershell
@@ -38,6 +46,7 @@ pipenv run python -m training.generate_dataset `
   --max-depth 5 `
   --heuristic current `
   --tree-learning `
+  --depth-heuristic `
   --output-root data/training
 ```
 

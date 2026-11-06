@@ -12,6 +12,37 @@ from connect_four import GameState
 
 Distribution = Literal["uniform", "bell"]
 PlayerConfig = Dict[str, Union[str, int]]
+ConfigValue = Union[str, int, float, bool]
+
+
+def depth_target(result: int, player: int, remaining_plies: int, penalty: float) -> float:
+    """Calculate a bounded depth-aware target from a game result.
+
+    Args:
+        result: Absolute game result: ``1``, ``-1`` or ``0``.
+        player: Player perspective: ``1`` or ``-1``.
+        remaining_plies: Moves from the current example to game end.
+        penalty: Score deduction per remaining move.
+
+    Returns:
+        A value in ``[-1, 1]``. Faster wins are closer to ``1`` and delayed
+        losses are closer to ``0`` than immediate losses.
+
+    Raises:
+        ValueError: If result, player, remaining plies or penalty is invalid.
+    """
+    if result not in (-1, 0, 1):
+        raise ValueError("result must be -1, 0 or 1")
+    if player not in (-1, 1):
+        raise ValueError("player must be 1 or -1")
+    if remaining_plies < 0:
+        raise ValueError("remaining_plies must be non-negative")
+    if penalty < 0:
+        raise ValueError("penalty must be non-negative")
+    perspective_result = result * player
+    if perspective_result == 0:
+        return 0.0
+    return max(-1.0, min(1.0, perspective_result * (1.0 - penalty * remaining_plies)))
 
 
 def encode_state(state: GameState) -> List[int]:
@@ -72,6 +103,8 @@ def iter_game_examples(
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
     heuristic: HeuristicName = "current",
     tree_learning: bool = False,
+    depth_heuristic: bool = False,
+    depth_penalty: float = 0.01,
 ) -> Iterator[Dict]:
     """Yield one supervised example for every move in generated games.
 
@@ -85,6 +118,8 @@ def iter_game_examples(
         player_configs: Optional per-player depth configuration.
         heuristic: Default heuristic name.
         tree_learning: Include all visited Minimax nodes in each example.
+        depth_heuristic: Add a depth-aware ``target`` field.
+        depth_penalty: Deduction per remaining ply for the depth target.
 
     Returns:
         An iterator yielding one dictionary per generated move.
@@ -149,6 +184,13 @@ def iter_game_examples(
             example["game"] = game_index
             example["step"] = step
             example["result"] = result
+            if depth_heuristic:
+                example["target"] = depth_target(
+                    result,
+                    int(example["player"]),
+                    len(game_examples) - step,
+                    depth_penalty,
+                )
             yield example
 
 
@@ -162,6 +204,8 @@ def generate_games(
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
     heuristic: HeuristicName = "current",
     tree_learning: bool = False,
+    depth_heuristic: bool = False,
+    depth_penalty: float = 0.01,
 ) -> List[Dict]:
     """Generate all examples in memory.
 
@@ -192,6 +236,8 @@ def generate_games(
             player_configs,
             heuristic,
             tree_learning,
+            depth_heuristic,
+            depth_penalty,
         )
     )
 
@@ -261,7 +307,7 @@ def write_dataset_stream(
 
 def save_run(
     examples: List[Dict],
-    config: Dict[str, Union[str, int, bool]],
+    config: Dict[str, ConfigValue],
     output_root: Path = Path("data/training"),
     timestamp: Optional[str] = None,
 ) -> Path:
@@ -297,7 +343,7 @@ def save_run(
 
 
 def generate_and_save_run(
-    config: Dict[str, Union[str, int, bool]],
+    config: Dict[str, ConfigValue],
     output_root: Path = Path("data/training"),
     timestamp: Optional[str] = None,
 ) -> Path:
@@ -340,6 +386,8 @@ def generate_and_save_run(
         seed=config.get("seed"),  # type: ignore[arg-type]
         heuristic=str(config.get("heuristic", "current")),  # type: ignore[arg-type]
         tree_learning=bool(config.get("tree_learning", False)),
+        depth_heuristic=bool(config.get("depth_heuristic", False)),
+        depth_penalty=float(config.get("depth_penalty", 0.01)),
         player_configs=(
             {
                 1: {
@@ -391,6 +439,18 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         default=False,
         help="store all visited Minimax search nodes (default: disabled)",
     )
+    parser.add_argument(
+        "--depth-heuristic",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="store depth-aware targets (default: disabled)",
+    )
+    parser.add_argument(
+        "--depth-penalty",
+        type=float,
+        default=0.01,
+        help="target deduction per remaining ply (default: 0.01)",
+    )
     parser.add_argument("--output-root", type=Path, default=Path("data/training"))
     parser.add_argument("--timestamp", default=None, help="override the output directory name")
     args = parser.parse_args(arguments)
@@ -405,6 +465,8 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         "batch_size": args.batch_size,
         "heuristic": args.heuristic,
         "tree_learning": args.tree_learning,
+        "depth_heuristic": args.depth_heuristic,
+        "depth_penalty": args.depth_penalty,
     }
     run_directory = generate_and_save_run(config, args.output_root, args.timestamp)
     print(f"Saved dataset to {run_directory}")

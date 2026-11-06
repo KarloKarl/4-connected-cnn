@@ -108,6 +108,20 @@ Dann enthält jedes Beispiel `tree_nodes` mit Brett, legalen Zügen, Suchwert,
 Resttiefe und `exact`. Alpha-Beta-Cutoffs werden als nicht-exakt markiert.
 Die Option ist bewusst opt-in, da sie die Datensatzgröße stark erhöhen kann.
 
+Für ein dynamisches, spielerrelatives Lernziel kann zusätzlich die
+Depth-Heuristic aktiviert werden:
+
+```powershell
+pipenv run python -m training.generate_dataset `
+  --games 100 `
+  --depth-heuristic `
+  --depth-penalty 0.01
+```
+
+Die Beispiele behalten `result` als finales Partiefazit und erhalten zusätzlich
+`target`. Ein schneller Sieg wird stärker belohnt, eine verzögerte Niederlage
+weniger stark bestraft. Die Begrenzung auf `[-1, 1]` hält das Signal stabil.
+
 ## Lokales Terminalspiel
 
 ```powershell
