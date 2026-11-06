@@ -6,7 +6,19 @@ from algos.random_strategy import RandomStrategy
 
 
 def create_strategy(name: str, difficulty: int, heuristic: HeuristicName = "current"):
-    """Create a configured strategy by its public command-line name."""
+    """Create a configured random or minimax strategy by public name.
+
+    Args:
+        name: ``random`` or ``minimax``.
+        difficulty: Minimax search depth.
+        heuristic: Heuristic used by Minimax.
+
+    Returns:
+        A configured strategy instance.
+
+    Raises:
+        ValueError: If the algorithm name, depth or heuristic is invalid.
+    """
     factories = {
         "random": RandomStrategy,
         "minimax": lambda: MinimaxStrategy(depth=difficulty, heuristic=heuristic),

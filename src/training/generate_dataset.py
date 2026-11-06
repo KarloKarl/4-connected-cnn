@@ -15,7 +15,14 @@ PlayerConfig = Dict[str, Union[str, int]]
 
 
 def encode_state(state: GameState) -> List[int]:
-    """Encode the board from the current player's perspective."""
+    """Encode the board from the current player's perspective.
+
+    Args:
+        state: Position to encode.
+
+    Returns:
+        A flattened list of 42 player-relative cell values.
+    """
     return [
         cell
         for row in state.encode_for_player(state.current_player)
@@ -29,6 +36,20 @@ def choose_depth(
     distribution: Distribution,
     rng: random.Random,
 ) -> int:
+    """Sample a Minimax depth from a uniform or bell-shaped distribution.
+
+    Args:
+        minimum: Inclusive lower depth bound.
+        maximum: Inclusive upper depth bound.
+        distribution: ``uniform`` or truncated Gaussian-like ``bell``.
+        rng: Random generator used for reproducible sampling.
+
+    Returns:
+        A depth within the requested bounds.
+
+    Raises:
+        ValueError: If bounds or distribution are invalid.
+    """
     if minimum < 1 or maximum < minimum:
         raise ValueError("depth range must satisfy 1 <= minimum <= maximum")
     if distribution not in ("uniform", "bell"):
@@ -51,6 +72,27 @@ def iter_game_examples(
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
     heuristic: HeuristicName = "current",
 ) -> Iterator[Dict]:
+    """Yield one supervised example for every move in generated games.
+
+    Args:
+        game_count: Number of games to simulate.
+        min_depth: Default minimum Minimax depth.
+        max_depth: Default maximum Minimax depth.
+        distribution: Default depth distribution.
+        random_first_move: Whether to randomize each opening move.
+        seed: Optional seed for deterministic generation.
+        player_configs: Optional per-player depth configuration.
+        heuristic: Default heuristic name.
+
+    Returns:
+        An iterator yielding one dictionary per generated move.
+
+    Yields:
+        Dictionaries containing board, legal moves, move, player and result.
+
+    Raises:
+        ValueError: If the game count or depth configuration is invalid.
+    """
     if game_count < 1:
         raise ValueError("game_count must be at least 1")
     if max_depth is None:
@@ -109,7 +151,24 @@ def generate_games(
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
     heuristic: HeuristicName = "current",
 ) -> List[Dict]:
-    """Generate all examples in memory; use ``generate_and_save_run`` for large runs."""
+    """Generate all examples in memory.
+
+    Use ``generate_and_save_run`` for larger datasets to avoid retaining all
+    examples in memory.
+
+    Args:
+        game_count: Number of games to simulate.
+        min_depth: Default minimum Minimax depth.
+        max_depth: Default maximum Minimax depth.
+        distribution: Default depth distribution.
+        random_first_move: Whether to randomize openings.
+        seed: Optional generation seed.
+        player_configs: Optional per-player configuration.
+        heuristic: Default heuristic name.
+
+    Returns:
+        All generated examples.
+    """
     return list(
         iter_game_examples(
             game_count,
@@ -125,14 +184,24 @@ def generate_games(
 
 
 def write_jsonl(examples: List[Dict], output: Path) -> None:
-    """Write legacy JSONL output; new runs should use ``write_dataset``."""
+    """Write legacy JSONL output.
+
+    Args:
+        examples: Examples to serialize.
+        output: Destination file.
+    """
     with output.open("w", encoding="utf-8") as file:
         for example in examples:
             file.write(json.dumps(example) + "\n")
 
 
 def write_dataset(examples: List[Dict], output: Path) -> None:
-    """Write the complete dataset as a JSON array."""
+    """Write the complete dataset as a JSON array.
+
+    Args:
+        examples: Examples to serialize.
+        output: Destination file.
+    """
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(examples, indent=2) + "\n", encoding="utf-8")
 
@@ -142,7 +211,19 @@ def write_dataset_stream(
     output: Path,
     batch_size: int = 100,
 ) -> int:
-    """Write a JSON array incrementally and flush every ``batch_size`` examples."""
+    """Write a JSON array incrementally and return the example count.
+
+    Args:
+        examples: Iterator of examples.
+        output: Destination file.
+        batch_size: Number of serialized examples per flush.
+
+    Returns:
+        Number of written examples.
+
+    Raises:
+        ValueError: If ``batch_size`` is less than one.
+    """
     if batch_size < 1:
         raise ValueError("batch_size must be at least 1")
 
@@ -171,7 +252,20 @@ def save_run(
     output_root: Path = Path("data/training"),
     timestamp: Optional[str] = None,
 ) -> Path:
-    """Save one generation run and its exact configuration."""
+    """Save examples and their exact configuration in a timestamped run.
+
+    Args:
+        examples: Examples to persist.
+        config: Generation configuration.
+        output_root: Parent directory for the run.
+        timestamp: Optional run-directory name.
+
+    Returns:
+        The created run directory.
+
+    Raises:
+        FileExistsError: If the target run directory already exists.
+    """
     run_name = timestamp or datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")
     run_directory = output_root / run_name
     if run_directory.exists():
@@ -194,7 +288,20 @@ def generate_and_save_run(
     output_root: Path = Path("data/training"),
     timestamp: Optional[str] = None,
 ) -> Path:
-    """Generate one run directly to disk without retaining all examples."""
+    """Generate one run directly to disk with incremental JSON output.
+
+    Args:
+        config: Generation configuration.
+        output_root: Parent directory for the run.
+        timestamp: Optional run-directory name.
+
+    Returns:
+        The completed run directory.
+
+    Raises:
+        FileExistsError: If the target run directory already exists.
+        ValueError: If the configuration is invalid.
+    """
     batch_size = int(config.get("batch_size", 100))
     run_name = timestamp or datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")
     run_directory = output_root / run_name

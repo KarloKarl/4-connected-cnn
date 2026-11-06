@@ -7,12 +7,27 @@ from typing import Dict, List, Sequence
 
 
 def load_json(path: Path):
+    """Load and decode one UTF-8 JSON file.
+
+    Args:
+        path: JSON file to read.
+
+    Returns:
+        The decoded JSON value.
+    """
     with path.open(encoding="utf-8") as file:
         return json.load(file)
 
 
 def group_examples(examples: Sequence[Dict]) -> List[List[Dict]]:
-    """Group examples by explicit metadata or infer boundaries for old runs."""
+    """Group examples by metadata or infer boundaries for legacy runs.
+
+    Args:
+        examples: Dataset examples with optional ``game`` and ``step`` fields.
+
+    Returns:
+        A list of games, each containing its ordered examples.
+    """
     if not examples:
         return []
 
@@ -36,12 +51,27 @@ def group_examples(examples: Sequence[Dict]) -> List[List[Dict]]:
 
 
 def decode_board_for_view(example: Dict) -> List[int]:
-    """Convert the player-relative training board to absolute piece values."""
+    """Convert a player-relative board to absolute piece values.
+
+    Args:
+        example: Training example containing ``board`` and optional ``player``.
+
+    Returns:
+        A flattened board using the shared player values.
+    """
     player = int(example.get("player", 1))
     return [int(cell) * player for cell in example["board"]]
 
 
 def load_run(run_directory: Path) -> Dict:
+    """Load a run and calculate data used by the browser viewer.
+
+    Args:
+        run_directory: Directory containing ``config.json`` and ``data.json``.
+
+    Returns:
+        Configuration, grouped games and difficulty distributions.
+    """
     config = load_json(run_directory / "config.json")
     examples = load_json(run_directory / "data.json")
     games = group_examples(examples)

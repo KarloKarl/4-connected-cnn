@@ -1,5 +1,19 @@
 # Technische Umsetzung
 
+## Einstieg
+
+Die Python-Quellen sind nach Verantwortlichkeiten aufgeteilt:
+
+- [`connect_four.py`](./connect_four.py) – unveränderlicher Spielzustand und
+  Regeln.
+- [`board_adapter.py`](./board_adapter.py) – Übersetzung der Hardwarewerte
+  `0`, `h` und `r` in den internen Spielzustand.
+- [`strategies.py`](./strategies.py) – zentrale Strategie-Fabrik.
+- [`play.py`](./play.py) – lokales Terminalspiel.
+- [`main.py`](./main.py) – FastAPI, Webapp und Hardwarekompatibilität.
+- [`algos/README.md`](./algos/README.md) – Strategien und Heuristiken.
+- [`training/README.md`](./training/README.md) – Datensatzpipeline und Viewer.
+
 ## Spielkern
 
 [`connect_four.py`](./connect_four.py) enthält den unveränderlichen
@@ -39,3 +53,15 @@ Standard.
 [`training/viewer.py`](./training/viewer.py) lädt und gruppiert gespeicherte
 Läufe, dekodiert spielerrelative Bretter und berechnet die
 Schwierigkeitsverteilungen für die Webansicht.
+
+## Zentrale Funktionen
+
+| Funktion | Verantwortung |
+|---|---|
+| `GameState.legal_moves()` | freie Spalten ermitteln |
+| `GameState.drop_piece()` | neuen unveränderlichen Brettzustand erzeugen |
+| `GameState.winner()` | horizontale, vertikale und diagonale Gewinne erkennen |
+| `MinimaxStrategy.choose_move()` | besten legalen Zug bestimmen |
+| `current_heuristic()` | Position aus Spielersicht bewerten |
+| `generate_and_save_run()` | Trainingslauf streamingfähig speichern |
+| `load_run()` | Lauf für Analyse und Webansicht aufbereiten |

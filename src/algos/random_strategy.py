@@ -7,6 +7,17 @@ class RandomStrategy:
     """Choose uniformly from the legal columns of a game state."""
 
     def choose_move(self, state: GameState) -> int:
+        """Return one legal move or raise for a terminal position.
+
+        Args:
+            state: Position from which to choose.
+
+        Returns:
+            A uniformly selected zero-based legal column.
+
+        Raises:
+            ValueError: If the position has no legal moves.
+        """
         legal_moves = state.legal_moves()
         if not legal_moves:
             raise ValueError("cannot choose a move on a terminal board")

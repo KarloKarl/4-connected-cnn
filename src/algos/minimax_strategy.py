@@ -8,7 +8,18 @@ from connect_four import GameState
 
 
 class MinimaxStrategy:
+    """Choose moves with alpha-beta minimax and a configurable heuristic."""
+
     def __init__(self, depth: int = 4, heuristic: HeuristicName = "current") -> None:
+        """Create a strategy with a positive search depth and heuristic name.
+
+        Args:
+            depth: Maximum search depth; must be at least one.
+            heuristic: Registered heuristic used at leaf nodes.
+
+        Raises:
+            ValueError: If the depth or heuristic is invalid.
+        """
         if depth < 1:
             raise ValueError("depth must be at least 1")
         self.depth = depth
@@ -16,6 +27,18 @@ class MinimaxStrategy:
         self._heuristic = get_heuristic(heuristic)
 
     def choose_move(self, state: GameState) -> int:
+        """Return the best legal move for the current player.
+
+        Args:
+            state: Position from which to choose.
+
+        Returns:
+            A zero-based legal column index.
+
+        Raises:
+            ValueError: If the position has no legal moves.
+            RuntimeError: If search returns no move for a non-terminal state.
+        """
         legal_moves = state.legal_moves()
         if not legal_moves:
             raise ValueError("cannot choose a move on a terminal board")
@@ -39,6 +62,18 @@ class MinimaxStrategy:
         beta: float,
         maximizing_player: int,
     ) -> Tuple[Optional[int], float]:
+        """Search the game tree and return the best move and its score.
+
+        Args:
+            state: Position at the current search node.
+            depth: Remaining search depth.
+            alpha: Best guaranteed maximizing score.
+            beta: Best guaranteed minimizing score.
+            maximizing_player: Player whose score is optimized.
+
+        Returns:
+            The selected column and its score.
+        """
         winner = state.winner()
         if winner is not None:
             if winner == maximizing_player:
@@ -76,4 +111,13 @@ class MinimaxStrategy:
         return best_move, value
 
     def _evaluate(self, state: GameState, player: int) -> float:
+        """Evaluate a leaf position with the configured heuristic.
+
+        Args:
+            state: Leaf position.
+            player: Perspective used for the score.
+
+        Returns:
+            The configured heuristic score.
+        """
         return self._heuristic(state, player)

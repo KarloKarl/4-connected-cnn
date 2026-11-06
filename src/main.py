@@ -341,7 +341,17 @@ async def web_game() -> FileResponse:
 
 
 def training_run_directory(run_id: str) -> Path:
-    """Resolve a run ID without allowing access outside the training root."""
+    """Resolve a run ID without allowing access outside the training root.
+
+    Args:
+        run_id: Directory name of the requested run.
+
+    Returns:
+        The validated run directory.
+
+    Raises:
+        HTTPException: If the ID is invalid or the run does not exist.
+    """
     if not run_id or Path(run_id).name != run_id:
         raise HTTPException(status_code=404, detail="training run not found")
     directory = TRAINING_ROOT / run_id
@@ -351,6 +361,15 @@ def training_run_directory(run_id: str) -> Path:
 
 
 def training_job_status(run_id: str, future: Future) -> Dict:
+    """Translate a background future into the public training status shape.
+
+    Args:
+        run_id: ID associated with the background job.
+        future: Future representing the generation task.
+
+    Returns:
+        A status dictionary for the API response.
+    """
     if not future.done():
         return {"id": run_id, "status": "running"}
     error = future.exception()
@@ -363,6 +382,18 @@ def generate_training_run(
     run_id: str,
     config: Dict[str, object],
 ) -> Path:
+    """Run dataset generation and convert failures into logged job errors.
+
+    Args:
+        run_id: Output directory name for the run.
+        config: Dataset generation configuration.
+
+    Returns:
+        The generated run directory.
+
+    Raises:
+        RuntimeError: If generation fails.
+    """
     try:
         return generate_and_save_run(config, TRAINING_ROOT, run_id)
     except Exception as error:

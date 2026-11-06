@@ -8,6 +8,14 @@ from strategies import create_strategy
 
 
 def render(state: GameState) -> str:
+    """Render a game state as a human-readable terminal board.
+
+    Args:
+        state: Position to render.
+
+    Returns:
+        Multiline board representation.
+    """
     symbols = {0: ".", PLAYER_ONE: "A", PLAYER_TWO: "H"}
     lines = ["  " + " ".join(str(column + 1) for column in range(COLUMNS))]
     for row in range(5, -1, -1):
@@ -22,7 +30,18 @@ def play(
     input_fn: Callable[[str], str] = input,
     output_fn: Callable[[str], None] = print,
 ) -> Optional[int]:
-    """Run one human-vs-AI game and return the winner."""
+    """Run one human-vs-AI game and return the winner.
+
+    Args:
+        algorithm: Strategy name.
+        difficulty: Minimax search depth.
+        human_first: Whether the human starts.
+        input_fn: Input function, injectable for tests.
+        output_fn: Output function, injectable for tests.
+
+    Returns:
+        Winner value, or ``None`` for a draw.
+    """
     strategy = create_strategy(algorithm, difficulty)
     state = GameState.initial()
     if not human_first:
@@ -55,6 +74,7 @@ def play(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line options for the terminal game."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--algorithm",
@@ -79,6 +99,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """Start one terminal game from command-line arguments."""
     args = parse_args()
     play(args.algorithm, args.difficulty, human_first=not args.ai_first)
 
