@@ -317,6 +317,24 @@ class TrainingRunRequest(BaseModel):
     heuristic: Literal["current", "ws22_minimax", "ws22_window"] = Field(
         default="current", description="Bewertungsfunktion des Minimax-Lehrers."
     )
+    tree_learning: bool = Field(
+        default=False,
+        description="Speichert alle besuchten Minimax-Knoten pro Trainingsbeispiel.",
+    )
+    depth_heuristic: bool = Field(
+        default=False,
+        description="Ergänzt ein spielerrelatives, tiefenabhängiges target.",
+    )
+    depth_penalty: float = Field(
+        default=0.01,
+        ge=0,
+        le=1,
+        description="Abzug pro verbleibendem Zug für die Depth-Heuristic.",
+    )
+    symmetry_augmentation: bool = Field(
+        default=False,
+        description="Erzeugt zusätzlich horizontal gespiegelte Beispiele.",
+    )
     player_one_min_depth: int = Field(default=1, ge=1, le=8, description="Minimale Tiefe für Spieler 1.")
     player_one_max_depth: int = Field(default=5, ge=1, le=8, description="Maximale Tiefe für Spieler 1.")
     player_one_distribution: Literal["uniform", "bell"] = Field(

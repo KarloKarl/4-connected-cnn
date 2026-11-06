@@ -59,6 +59,19 @@ class WebApiTests(unittest.TestCase):
 
         self.assertEqual(request.heuristic, "ws22_minimax")
 
+    def test_training_run_accepts_learning_options(self):
+        request = TrainingRunRequest(
+            tree_learning=True,
+            depth_heuristic=True,
+            depth_penalty=0.02,
+            symmetry_augmentation=True,
+        )
+
+        self.assertTrue(request.tree_learning)
+        self.assertTrue(request.depth_heuristic)
+        self.assertEqual(request.depth_penalty, 0.02)
+        self.assertTrue(request.symmetry_augmentation)
+
     def test_training_run_rejects_invalid_depth_range(self):
         with self.assertRaises(HTTPException) as context:
             asyncio.run(start_training_run(

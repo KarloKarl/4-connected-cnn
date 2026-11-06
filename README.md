@@ -61,6 +61,8 @@ Die Webapp bietet:
 - **Nachvollziehen:** Spiele, Züge, Minimax-Tiefen und Ergebnisse analysieren
 - **Symmetrische oder asymmetrische Schwierigkeit:** getrennte Konfigurationen
   und Verteilungen für Spieler 1 und -1
+- **Lernoptionen:** Tree-Learning, Depth-Heuristic und horizontale
+  Symmetrie-Augmentierung bei der Datengenerierung
 
 ## Datensätze per CLI
 

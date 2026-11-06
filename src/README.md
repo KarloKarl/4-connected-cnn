@@ -48,7 +48,9 @@ gezogen. Symmetrische Läufe verwenden eine gemeinsame Konfiguration;
 asymmetrische Läufe wählen Tiefe und Verteilung abhängig vom aktuellen
 Spieler. Über `heuristic` beziehungsweise die CLI-Option `--heuristic` kann
 die Bewertungsfunktion für einen Lauf ausgewählt werden; `current` bleibt der
-Standard.
+Standard. Die optionalen Lernoptionen `tree_learning`,
+`depth_heuristic`/`depth_penalty` und `symmetry_augmentation` sind über CLI,
+API und Webformular verfügbar.
 
 [`training/viewer.py`](./training/viewer.py) lädt und gruppiert gespeicherte
 Läufe, dekodiert spielerrelative Bretter und berechnet die

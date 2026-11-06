@@ -66,4 +66,5 @@ data/training/<lauf-id>/config.json  Konfiguration und Status
 Für große Datenmengen `generate_and_save_run` beziehungsweise den Streaming-
 Writer verwenden, damit nicht alle Beispiele gleichzeitig im Arbeitsspeicher
 liegen. `player_configs` ermöglicht asymmetrische Tiefen und Verteilungen für
-Spieler `1` und `-1`.
+Spieler `1` und `-1`. Alle drei Lernoptionen sind außerdem im Webformular
+unter **Weitere Optionen** verfügbar.
