@@ -15,6 +15,11 @@ pipenv run uvicorn main:app --app-dir src --host 127.0.0.1 --port 8094
 
 Anschließend [http://127.0.0.1:8094/play](http://127.0.0.1:8094/play) öffnen.
 
+Die interaktive API-Dokumentation ist unter
+[http://127.0.0.1:8094/docs](http://127.0.0.1:8094/docs) verfügbar.
+Die alternative ReDoc-Dokumentation steht unter
+[http://127.0.0.1:8094/redoc](http://127.0.0.1:8094/redoc) bereit.
+
 ### Dockerfile bauen
 
 ```powershell
@@ -121,6 +126,8 @@ Weitere technische Details stehen in der [technischen Dokumentation unter
 
 ## API
 
+- `GET /docs` – Swagger UI
+- `GET /redoc` – ReDoc
 - `GET /play` – Webapp
 - `POST /web/move` – Live-Spielzug
 - `POST /web/training/runs` – Datensatzlauf starten
@@ -129,3 +136,45 @@ Weitere technische Details stehen in der [technischen Dokumentation unter
 - `GET /web/training/runs/{run_id}/games` – Spiele eines Laufs
 - `GET /web/training/runs/{run_id}/games/{game_index}` – Spielschritte
 - `POST /updateBoard` – bestehende Hardware-Schnittstelle
+
+### Hardware-Schnittstelle
+
+Die Hardwaresteuerung sendet das vollständige Brett per `POST /updateBoard`.
+Das JSON enthält `Column1` bis `Column7`, jeweils mit `Row1` bis `Row6`, sowie
+`Difficulty`:
+
+```json
+{
+  "Column1": {"Row1": "h", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Column2": {"Row1": "0", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Column3": {"Row1": "0", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Column4": {"Row1": "0", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Column5": {"Row1": "0", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Column6": {"Row1": "0", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Column7": {"Row1": "0", "Row2": "0", "Row3": "0", "Row4": "0", "Row5": "0", "Row6": "0"},
+  "Difficulty": 4
+}
+```
+
+Zulässige Zellwerte sind ausschließlich `"0"` (leer), `"h"` (Mensch) und
+`"r"` (Roboter). `Row1` ist die unterste, `Row6` die oberste Zeile;
+`Column1` ist links und `Column7` rechts. `Difficulty` ist die Minimax-Tiefe
+von 1 bis 6.
+
+Die Antwort beschreibt die Aktion:
+
+```json
+{
+  "status": "move",
+  "winner": null,
+  "move": {"col": 3, "row": 0},
+  "message": "Roboterzug an die Hardwaresteuerung gesendet."
+}
+```
+
+`move.col` und `move.row` sind nullbasiert. Bei `status: "game_over"` ist
+`winner` entweder `"HUMAN"`, `"ROBOT"` oder `"DRAW"`, und es wird kein
+weiterer Roboterzug erwartet. Die API benachrichtigt die
+Hardwaresteuerung intern über `http://172.17.0.1:8096/move` beziehungsweise
+`/end`. Die vollständigen interaktiven Schemas und Beispiele stehen unter
+[`/docs`](http://127.0.0.1:8094/docs) beim Endpunkt `POST /updateBoard`.

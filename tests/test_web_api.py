@@ -4,10 +4,39 @@ import unittest
 from fastapi import HTTPException
 
 from connect_four import PLAYER_ONE, PLAYER_TWO
-from main import TrainingRunRequest, WebMoveRequest, start_training_run, web_move
+from main import Board, TrainingRunRequest, WebMoveRequest, app, start_training_run, web_move
 
 
 class WebApiTests(unittest.TestCase):
+    def test_openapi_documents_all_application_endpoints(self):
+        schema = app.openapi()
+
+        self.assertEqual(schema["info"]["title"], "Connect Four API")
+        self.assertIn("/web/move", schema["paths"])
+        self.assertIn("/web/training/runs/{run_id}/games/{game_index}", schema["paths"])
+        self.assertIn("/updateBoard", schema["paths"])
+        self.assertEqual(schema["paths"]["/web/move"]["post"]["tags"], ["Web"])
+        self.assertIn("TrainingRunRequest", schema["components"]["schemas"])
+        hardware = schema["paths"]["/updateBoard"]["post"]
+        self.assertEqual(hardware["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+                         "#/components/schemas/HardwareUpdateResponse")
+        self.assertIn("h", str(schema["components"]["schemas"]["Column"]))
+        self.assertIn("r", str(schema["components"]["schemas"]["Column"]))
+
+    def test_hardware_board_rejects_unknown_cell_values(self):
+        board = {
+            f"Column{column}": {
+                f"Row{row}": "0"
+                for row in range(1, 7)
+            }
+            for column in range(1, 8)
+        }
+        board["Column1"]["Row1"] = "x"
+        board["Difficulty"] = 4
+
+        with self.assertRaises(ValueError):
+            Board(**board)
+
     def test_training_run_rejects_invalid_asymmetric_depth_range(self):
         with self.assertRaises(HTTPException) as context:
             asyncio.run(start_training_run(
