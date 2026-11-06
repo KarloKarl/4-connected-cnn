@@ -122,6 +122,18 @@ Die Beispiele behalten `result` als finales Partiefazit und erhalten zusätzlich
 `target`. Ein schneller Sieg wird stärker belohnt, eine verzögerte Niederlage
 weniger stark bestraft. Die Begrenzung auf `[-1, 1]` hält das Signal stabil.
 
+Die horizontale Symmetrie kann ohne zusätzliche Suche augmentiert werden:
+
+```powershell
+pipenv run python -m training.generate_dataset `
+  --games 100 `
+  --symmetry-augmentation
+```
+
+Dabei werden Brett, Zielzug, legale Züge und optionale `tree_nodes` gespiegelt.
+Jedes Beispiel erscheint einmal als `original` und einmal als
+`horizontal_flip`; die Datenmenge verdoppelt sich.
+
 ## Lokales Terminalspiel
 
 ```powershell

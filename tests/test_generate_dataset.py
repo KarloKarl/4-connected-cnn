@@ -14,6 +14,7 @@ from training.generate_dataset import (
     write_dataset_stream,
     write_jsonl,
 )
+from training.generate_dataset import mirror_example
 
 
 class DatasetGeneratorTests(unittest.TestCase):
@@ -36,6 +37,39 @@ class DatasetGeneratorTests(unittest.TestCase):
         self.assertTrue(examples)
         self.assertTrue(all("target" in example for example in examples))
         self.assertTrue(all(-1 <= example["target"] <= 1 for example in examples))
+
+    def test_horizontal_symmetry_mirrors_board_and_move(self):
+        example = {
+            "board": list(range(42)),
+            "legal_moves": [0, 2, 6],
+            "move": 2,
+            "tree_nodes": [{
+                "board": list(range(42)),
+                "legal_moves": [0, 2, 6],
+                "value": 1.0,
+            }],
+        }
+
+        mirrored = mirror_example(example)
+
+        self.assertEqual(mirrored["move"], 4)
+        self.assertEqual(mirrored["legal_moves"], [0, 4, 6])
+        self.assertEqual(mirrored["board"][:7], list(range(6, -1, -1)))
+        self.assertEqual(mirrored["tree_nodes"][0]["board"][:7], list(range(6, -1, -1)))
+
+    def test_symmetry_augmentation_doubles_examples(self):
+        examples = generate_games(
+            game_count=1,
+            min_depth=1,
+            max_depth=1,
+            random_first_move=False,
+            seed=1,
+            symmetry_augmentation=True,
+        )
+
+        self.assertEqual(len(examples) % 2, 0)
+        self.assertEqual(examples[0]["symmetry"], "original")
+        self.assertEqual(examples[1]["symmetry"], "horizontal_flip")
     def test_examples_contain_legal_teacher_moves(self):
         examples = generate_games(game_count=1, min_depth=1, max_depth=2, seed=1)
 

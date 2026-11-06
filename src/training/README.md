@@ -36,6 +36,12 @@ hinausgezögerte Niederlage näher bei `0` als eine sofortige Niederlage.
 verbleibendem Zug und hat standardmäßig den Wert `0.01`. `result` bleibt
 unverändert und kann weiterhin als binäres Partiefazit verwendet werden.
 
+Mit `symmetry_augmentation=True` beziehungsweise
+`--symmetry-augmentation` wird jedes Beispiel zusätzlich horizontal gespiegelt
+gespeichert. Dabei werden Brett, Zug, legale Züge und vorhandene `tree_nodes`
+konsistent gespiegelt. Die Datensatzmenge verdoppelt sich ohne zusätzliche
+Minimax-Suche; `symmetry` unterscheidet `original` und `horizontal_flip`.
+
 ## CLI
 
 ```powershell

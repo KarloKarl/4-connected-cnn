@@ -15,6 +15,53 @@ PlayerConfig = Dict[str, Union[str, int]]
 ConfigValue = Union[str, int, float, bool]
 
 
+def mirror_board(board: List[int]) -> List[int]:
+    """Mirror a flattened bottom-first 6x7 board along the vertical axis.
+
+    Args:
+        board: Flattened board with 42 cells.
+
+    Returns:
+        A horizontally mirrored board.
+
+    Raises:
+        ValueError: If ``board`` does not contain 42 cells.
+    """
+    if len(board) != 42:
+        raise ValueError("board must contain 42 cells")
+    return [
+        cell
+        for row in (board[index:index + 7] for index in range(0, 42, 7))
+        for cell in reversed(row)
+    ]
+
+
+def mirror_example(example: Dict) -> Dict:
+    """Create a horizontal mirror of one training example.
+
+    Args:
+        example: Example with a flattened board and selected move.
+
+    Returns:
+        A copied example with mirrored board, moves and tree nodes.
+    """
+    mirrored = dict(example)
+    mirrored["board"] = mirror_board(example["board"])
+    mirrored["move"] = 6 - int(example["move"])
+    mirrored["legal_moves"] = sorted(6 - int(move) for move in example["legal_moves"])
+    if "tree_nodes" in example:
+        mirrored["tree_nodes"] = []
+        for node in example["tree_nodes"]:
+            mirrored_node = dict(node)
+            mirrored_node["board"] = mirror_board(node["board"])
+            mirrored_node["legal_moves"] = sorted(
+                6 - int(move) for move in node["legal_moves"]
+            )
+            mirrored["tree_nodes"].append(mirrored_node)
+    mirrored["symmetry"] = "horizontal_flip"
+    return mirrored
+
+
 def depth_target(result: int, player: int, remaining_plies: int, penalty: float) -> float:
     """Calculate a bounded depth-aware target from a game result.
 
@@ -105,6 +152,7 @@ def iter_game_examples(
     tree_learning: bool = False,
     depth_heuristic: bool = False,
     depth_penalty: float = 0.01,
+    symmetry_augmentation: bool = False,
 ) -> Iterator[Dict]:
     """Yield one supervised example for every move in generated games.
 
@@ -120,6 +168,7 @@ def iter_game_examples(
         tree_learning: Include all visited Minimax nodes in each example.
         depth_heuristic: Add a depth-aware ``target`` field.
         depth_penalty: Deduction per remaining ply for the depth target.
+        symmetry_augmentation: Yield each example and its horizontal mirror.
 
     Returns:
         An iterator yielding one dictionary per generated move.
@@ -191,7 +240,12 @@ def iter_game_examples(
                     len(game_examples) - step,
                     depth_penalty,
                 )
-            yield example
+            if symmetry_augmentation:
+                example["symmetry"] = "original"
+                yield example
+                yield mirror_example(example)
+            else:
+                yield example
 
 
 def generate_games(
@@ -206,6 +260,7 @@ def generate_games(
     tree_learning: bool = False,
     depth_heuristic: bool = False,
     depth_penalty: float = 0.01,
+    symmetry_augmentation: bool = False,
 ) -> List[Dict]:
     """Generate all examples in memory.
 
@@ -238,6 +293,7 @@ def generate_games(
             tree_learning,
             depth_heuristic,
             depth_penalty,
+            symmetry_augmentation,
         )
     )
 
@@ -388,6 +444,7 @@ def generate_and_save_run(
         tree_learning=bool(config.get("tree_learning", False)),
         depth_heuristic=bool(config.get("depth_heuristic", False)),
         depth_penalty=float(config.get("depth_penalty", 0.01)),
+        symmetry_augmentation=bool(config.get("symmetry_augmentation", False)),
         player_configs=(
             {
                 1: {
@@ -451,6 +508,12 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         default=0.01,
         help="target deduction per remaining ply (default: 0.01)",
     )
+    parser.add_argument(
+        "--symmetry-augmentation",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="add horizontally mirrored examples (default: disabled)",
+    )
     parser.add_argument("--output-root", type=Path, default=Path("data/training"))
     parser.add_argument("--timestamp", default=None, help="override the output directory name")
     args = parser.parse_args(arguments)
@@ -467,6 +530,7 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         "tree_learning": args.tree_learning,
         "depth_heuristic": args.depth_heuristic,
         "depth_penalty": args.depth_penalty,
+        "symmetry_augmentation": args.symmetry_augmentation,
     }
     run_directory = generate_and_save_run(config, args.output_root, args.timestamp)
     print(f"Saved dataset to {run_directory}")
