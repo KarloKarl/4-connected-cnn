@@ -106,6 +106,7 @@ class TrainingRunRequest(BaseModel):
     random_first_move: bool = True
     seed: Optional[int] = None
     batch_size: int = Field(default=100, ge=1, le=10000)
+    heuristic: Literal["current", "ws22_minimax", "ws22_window"] = "current"
     player_one_min_depth: int = Field(default=1, ge=1, le=8)
     player_one_max_depth: int = Field(default=5, ge=1, le=8)
     player_one_distribution: Literal["uniform", "bell"] = "uniform"

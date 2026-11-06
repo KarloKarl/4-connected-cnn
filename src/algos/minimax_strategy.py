@@ -3,14 +3,17 @@
 import math
 from typing import Optional, Tuple
 
-from connect_four import COLUMNS, ROWS, EMPTY, GameState
+from algos.heuristics import HeuristicName, get_heuristic
+from connect_four import GameState
 
 
 class MinimaxStrategy:
-    def __init__(self, depth: int = 4) -> None:
+    def __init__(self, depth: int = 4, heuristic: HeuristicName = "current") -> None:
         if depth < 1:
             raise ValueError("depth must be at least 1")
         self.depth = depth
+        self.heuristic = heuristic
+        self._heuristic = get_heuristic(heuristic)
 
     def choose_move(self, state: GameState) -> int:
         legal_moves = state.legal_moves()
@@ -73,47 +76,4 @@ class MinimaxStrategy:
         return best_move, value
 
     def _evaluate(self, state: GameState, player: int) -> float:
-        opponent = -player
-        score = 0.0
-        center = [state.board[row][COLUMNS // 2] for row in range(ROWS)]
-        score += center.count(player) * 3
-        score -= center.count(opponent) * 3
-
-        for window in self._windows(state):
-            score += self._score_window(window, player, opponent)
-        return score
-
-    @staticmethod
-    def _score_window(window, player: int, opponent: int) -> float:
-        player_count = window.count(player)
-        opponent_count = window.count(opponent)
-        empty_count = window.count(EMPTY)
-        if player_count == 4:
-            return 100.0
-        if opponent_count == 4:
-            return -100.0
-        if player_count == 3 and empty_count == 1:
-            return 5.0
-        if opponent_count == 3 and empty_count == 1:
-            return -6.0
-        if player_count == 2 and empty_count == 2:
-            return 2.0
-        if opponent_count == 2 and empty_count == 2:
-            return -2.0
-        return 0.0
-
-    @staticmethod
-    def _windows(state: GameState):
-        board = state.board
-        for row in range(ROWS):
-            for column in range(COLUMNS - 3):
-                yield [board[row][column + offset] for offset in range(4)]
-        for row in range(ROWS - 3):
-            for column in range(COLUMNS):
-                yield [board[row + offset][column] for offset in range(4)]
-        for row in range(ROWS - 3):
-            for column in range(COLUMNS - 3):
-                yield [board[row + offset][column + offset] for offset in range(4)]
-        for row in range(ROWS - 3):
-            for column in range(COLUMNS - 3):
-                yield [board[row + 3 - offset][column + offset] for offset in range(4)]
+        return self._heuristic(state, player)

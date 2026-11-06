@@ -105,6 +105,7 @@ class DatasetGeneratorTests(unittest.TestCase):
                     "--no-random-first-move",
                     "--seed", "7",
                     "--batch-size", "2",
+                    "--heuristic", "ws22_window",
                     "--output-root", directory,
                     "--timestamp", "cli-test",
                 ]
@@ -115,6 +116,7 @@ class DatasetGeneratorTests(unittest.TestCase):
             self.assertEqual(config["distribution"], "bell")
             self.assertEqual(config["seed"], 7)
             self.assertEqual(config["batch_size"], 2)
+            self.assertEqual(config["heuristic"], "ws22_window")
 
     def test_stream_writer_creates_valid_json_in_batches(self):
         examples = iter({"index": index} for index in range(5))

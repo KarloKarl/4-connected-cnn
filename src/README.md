@@ -13,6 +13,9 @@ leeres Feld, `1` und `-1` für die beiden Spieler.
   legale Züge.
 - [`algos/minimax_strategy.py`](./algos/minimax_strategy.py) verwendet
   Alpha-Beta-Minimax mit konfigurierbarer Suchtiefe und Heuristik.
+- [`algos/heuristics.py`](./algos/heuristics.py) kapselt die aktuelle
+  Heuristik sowie die beiden historischen WS22-Bewertungsprofile
+  `ws22_minimax` und `ws22_window`.
 - [`strategies.py`](./strategies.py) erzeugt die konfigurierte Strategie.
 
 ## Webapp und API
@@ -29,9 +32,10 @@ Minimax-Partien und speichert pro Zug Brett, legale Züge, gewählten Zug,
 Spieler, Suchtiefe und Partieergebnis. Die Tiefe wird für jeden Zug neu
 gezogen. Symmetrische Läufe verwenden eine gemeinsame Konfiguration;
 asymmetrische Läufe wählen Tiefe und Verteilung abhängig vom aktuellen
-Spieler.
+Spieler. Über `heuristic` beziehungsweise die CLI-Option `--heuristic` kann
+die Bewertungsfunktion für einen Lauf ausgewählt werden; `current` bleibt der
+Standard.
 
 [`training/viewer.py`](./training/viewer.py) lädt und gruppiert gespeicherte
 Läufe, dekodiert spielerrelative Bretter und berechnet die
 Schwierigkeitsverteilungen für die Webansicht.
-

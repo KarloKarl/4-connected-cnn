@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Literal, Optional, Sequence, Union
 
 from algos.minimax_strategy import MinimaxStrategy
+from algos.heuristics import HeuristicName
 from connect_four import GameState
 
 Distribution = Literal["uniform", "bell"]
@@ -48,6 +49,7 @@ def iter_game_examples(
     random_first_move: bool = True,
     seed: Optional[int] = None,
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
+    heuristic: HeuristicName = "current",
 ) -> Iterator[Dict]:
     if game_count < 1:
         raise ValueError("game_count must be at least 1")
@@ -76,7 +78,7 @@ def iter_game_examples(
                 str(settings["distribution"]),  # type: ignore[arg-type]
                 rng,
             )
-            strategy = MinimaxStrategy(depth=depth)
+            strategy = MinimaxStrategy(depth=depth, heuristic=str(settings.get("heuristic", heuristic)))
             move = strategy.choose_move(state)
             game_examples.append(
                 {
@@ -105,6 +107,7 @@ def generate_games(
     random_first_move: bool = True,
     seed: Optional[int] = None,
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
+    heuristic: HeuristicName = "current",
 ) -> List[Dict]:
     """Generate all examples in memory; use ``generate_and_save_run`` for large runs."""
     return list(
@@ -116,6 +119,7 @@ def generate_games(
             random_first_move,
             seed,
             player_configs,
+            heuristic,
         )
     )
 
@@ -214,6 +218,7 @@ def generate_and_save_run(
         distribution=config["distribution"],  # type: ignore[arg-type]
         random_first_move=bool(config["random_first_move"]),
         seed=config.get("seed"),  # type: ignore[arg-type]
+        heuristic=str(config.get("heuristic", "current")),  # type: ignore[arg-type]
         player_configs=(
             {
                 1: {
@@ -254,6 +259,11 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
     )
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument(
+        "--heuristic",
+        choices=("current", "ws22_minimax", "ws22_window"),
+        default="current",
+    )
     parser.add_argument("--output-root", type=Path, default=Path("data/training"))
     parser.add_argument("--timestamp", default=None, help="override the output directory name")
     args = parser.parse_args(arguments)
@@ -266,6 +276,7 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         "random_first_move": args.random_first_move,
         "seed": args.seed,
         "batch_size": args.batch_size,
+        "heuristic": args.heuristic,
     }
     run_directory = generate_and_save_run(config, args.output_root, args.timestamp)
     print(f"Saved dataset to {run_directory}")

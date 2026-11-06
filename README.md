@@ -80,6 +80,16 @@ Die Tiefe wird für jeden Minimax-Zug neu gezogen. Der erste Zug ist
 standardmäßig zufällig; mit `--no-random-first-move` wird er deterministisch
 erzeugt.
 
+Die Bewertungsfunktion kann über `--heuristic` gewählt werden:
+
+```powershell
+pipenv run python -m training.generate_dataset --heuristic ws22_minimax
+```
+
+Verfügbar sind `current` (Standard), `ws22_minimax` und `ws22_window`. Die
+beiden WS22-Varianten reproduzieren die historischen Heuristiken getrennt von
+der aktuellen Implementierung.
+
 ## Lokales Terminalspiel
 
 ```powershell

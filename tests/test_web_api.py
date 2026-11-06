@@ -25,6 +25,11 @@ class WebApiTests(unittest.TestCase):
         self.assertEqual(request.name, "  Mein Lauf  ")
         self.assertLessEqual(len(request.name), 80)
 
+    def test_training_run_accepts_historical_heuristic(self):
+        request = TrainingRunRequest(heuristic="ws22_minimax")
+
+        self.assertEqual(request.heuristic, "ws22_minimax")
+
     def test_training_run_rejects_invalid_depth_range(self):
         with self.assertRaises(HTTPException) as context:
             asyncio.run(start_training_run(

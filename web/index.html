@@ -141,6 +141,13 @@
         <fieldset class="form-section">
           <legend>Weitere Optionen</legend>
           <div class="generator-fields">
+            <label>Heuristik
+              <select id="training-heuristic">
+                <option value="current">Aktuell</option>
+                <option value="ws22_minimax">WS22 Minimax</option>
+                <option value="ws22_window">WS22 Fensterbewertung</option>
+              </select>
+            </label>
             <label>Batchgröße
               <input id="training-batch-size" type="number" min="1" max="10000" value="100" required>
             </label>
