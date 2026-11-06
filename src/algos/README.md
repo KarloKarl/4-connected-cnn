@@ -45,3 +45,14 @@ from algos.minimax_strategy import MinimaxStrategy
 strategy = MinimaxStrategy(depth=4, heuristic="current")
 move = strategy.choose_move(state)
 ```
+
+Für Tree-Learning kann die Suche zusätzlich alle besuchten Zustände liefern:
+
+```python
+move, nodes = strategy.choose_move_with_trace(state)
+```
+
+Jeder Knoten enthält ein spielerrelatives `board`, `legal_moves`, den
+zurückgegebenen `value`, die `remaining_depth` und `exact`. `exact` ist bei
+Alpha-Beta-Cutoffs `false`, weil der Wert dort eine gültige Schranke, aber
+keine vollständig ausgerechnete Minimax-Bewertung sein kann.

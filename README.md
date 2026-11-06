@@ -95,6 +95,19 @@ Verfügbar sind `current` (Standard), `ws22_minimax` und `ws22_window`. Die
 beiden WS22-Varianten reproduzieren die historischen Heuristiken getrennt von
 der aktuellen Implementierung.
 
+Für Tree-Learning können zusätzlich alle besuchten Minimax-Zustände gespeichert
+werden:
+
+```powershell
+pipenv run python -m training.generate_dataset `
+  --games 100 `
+  --tree-learning
+```
+
+Dann enthält jedes Beispiel `tree_nodes` mit Brett, legalen Zügen, Suchwert,
+Resttiefe und `exact`. Alpha-Beta-Cutoffs werden als nicht-exakt markiert.
+Die Option ist bewusst opt-in, da sie die Datensatzgröße stark erhöhen kann.
+
 ## Lokales Terminalspiel
 
 ```powershell

@@ -37,6 +37,24 @@ class DatasetGeneratorTests(unittest.TestCase):
 
         self.assertGreater(len({example["depth"] for example in examples}), 1)
 
+    def test_tree_learning_persists_visited_search_nodes(self):
+        examples = generate_games(
+            game_count=1,
+            min_depth=1,
+            max_depth=1,
+            random_first_move=False,
+            seed=1,
+            tree_learning=True,
+        )
+
+        self.assertTrue(examples[0]["tree_nodes"])
+        self.assertEqual(
+            examples[0]["tree_node_count"],
+            len(examples[0]["tree_nodes"]),
+        )
+        self.assertIn("value", examples[0]["tree_nodes"][0])
+        self.assertIn("exact", examples[0]["tree_nodes"][0])
+
     def test_asymmetric_depths_follow_the_current_player(self):
         examples = generate_games(
             game_count=1,
@@ -106,6 +124,7 @@ class DatasetGeneratorTests(unittest.TestCase):
                     "--seed", "7",
                     "--batch-size", "2",
                     "--heuristic", "ws22_window",
+                    "--tree-learning",
                     "--output-root", directory,
                     "--timestamp", "cli-test",
                 ]
@@ -117,6 +136,7 @@ class DatasetGeneratorTests(unittest.TestCase):
             self.assertEqual(config["seed"], 7)
             self.assertEqual(config["batch_size"], 2)
             self.assertEqual(config["heuristic"], "ws22_window")
+            self.assertTrue(config["tree_learning"])
 
     def test_stream_writer_creates_valid_json_in_batches(self):
         examples = iter({"index": index} for index in range(5))

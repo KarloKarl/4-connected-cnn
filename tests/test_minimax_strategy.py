@@ -23,6 +23,17 @@ class MinimaxStrategyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MinimaxStrategy(depth=0)
 
+    def test_trace_contains_visited_nodes_and_values(self):
+        state = GameState.initial()
+
+        move, trace = MinimaxStrategy(depth=1).choose_move_with_trace(state)
+
+        self.assertIn(move, state.legal_moves())
+        self.assertTrue(trace)
+        self.assertEqual(len(trace[0]["board"]), 42)
+        self.assertIn("value", trace[0])
+        self.assertIn("exact", trace[0])
+
 
 if __name__ == "__main__":
     unittest.main()

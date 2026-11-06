@@ -71,6 +71,7 @@ def iter_game_examples(
     seed: Optional[int] = None,
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
     heuristic: HeuristicName = "current",
+    tree_learning: bool = False,
 ) -> Iterator[Dict]:
     """Yield one supervised example for every move in generated games.
 
@@ -83,6 +84,7 @@ def iter_game_examples(
         seed: Optional seed for deterministic generation.
         player_configs: Optional per-player depth configuration.
         heuristic: Default heuristic name.
+        tree_learning: Include all visited Minimax nodes in each example.
 
     Returns:
         An iterator yielding one dictionary per generated move.
@@ -120,17 +122,26 @@ def iter_game_examples(
                 str(settings["distribution"]),  # type: ignore[arg-type]
                 rng,
             )
-            strategy = MinimaxStrategy(depth=depth, heuristic=str(settings.get("heuristic", heuristic)))
-            move = strategy.choose_move(state)
-            game_examples.append(
-                {
-                    "board": encode_state(state),
-                    "legal_moves": list(state.legal_moves()),
-                    "move": move,
-                    "player": state.current_player,
-                    "depth": depth,
-                }
+            strategy = MinimaxStrategy(
+                depth=depth,
+                heuristic=str(settings.get("heuristic", heuristic)),
             )
+            if tree_learning:
+                move, tree_nodes = strategy.choose_move_with_trace(state)
+            else:
+                move = strategy.choose_move(state)
+                tree_nodes = None
+            example = {
+                "board": encode_state(state),
+                "legal_moves": list(state.legal_moves()),
+                "move": move,
+                "player": state.current_player,
+                "depth": depth,
+            }
+            if tree_nodes is not None:
+                example["tree_nodes"] = tree_nodes
+                example["tree_node_count"] = len(tree_nodes)
+            game_examples.append(example)
             state = state.drop_piece(move)
 
         result = state.winner() or 0
@@ -150,6 +161,7 @@ def generate_games(
     seed: Optional[int] = None,
     player_configs: Optional[Dict[int, PlayerConfig]] = None,
     heuristic: HeuristicName = "current",
+    tree_learning: bool = False,
 ) -> List[Dict]:
     """Generate all examples in memory.
 
@@ -179,6 +191,7 @@ def generate_games(
             seed,
             player_configs,
             heuristic,
+            tree_learning,
         )
     )
 
@@ -326,6 +339,7 @@ def generate_and_save_run(
         random_first_move=bool(config["random_first_move"]),
         seed=config.get("seed"),  # type: ignore[arg-type]
         heuristic=str(config.get("heuristic", "current")),  # type: ignore[arg-type]
+        tree_learning=bool(config.get("tree_learning", False)),
         player_configs=(
             {
                 1: {
@@ -371,6 +385,12 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         choices=("current", "ws22_minimax", "ws22_window"),
         default="current",
     )
+    parser.add_argument(
+        "--tree-learning",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="store all visited Minimax search nodes (default: disabled)",
+    )
     parser.add_argument("--output-root", type=Path, default=Path("data/training"))
     parser.add_argument("--timestamp", default=None, help="override the output directory name")
     args = parser.parse_args(arguments)
@@ -384,6 +404,7 @@ def main(arguments: Optional[Sequence[str]] = None) -> Path:
         "seed": args.seed,
         "batch_size": args.batch_size,
         "heuristic": args.heuristic,
+        "tree_learning": args.tree_learning,
     }
     run_directory = generate_and_save_run(config, args.output_root, args.timestamp)
     print(f"Saved dataset to {run_directory}")

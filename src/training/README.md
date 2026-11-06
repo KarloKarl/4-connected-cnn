@@ -20,6 +20,14 @@ Dieses Verzeichnis erzeugt und analysiert Minimax-basierte Trainingsdaten.
    vollständiger Konfiguration.
 6. `viewer.load_run` bereitet gespeicherte Läufe für die Webansicht auf.
 
+Mit `tree_learning=True` beziehungsweise `--tree-learning` werden zusätzlich
+alle während jeder Minimax-Suche besuchten Zustände im jeweiligen Beispiel
+unter `tree_nodes` gespeichert. Jeder Knoten enthält seinen player-relativen
+Brettzustand, die legalen Züge, den Suchwert und die Resttiefe. Bei
+Alpha-Beta-Cutoffs markiert `exact: false`, dass der Wert eine Schranke ist.
+Die Option ist standardmäßig deaktiviert, damit bestehende Datensätze und
+Dateigrößen unverändert bleiben.
+
 ## CLI
 
 ```powershell
@@ -29,6 +37,7 @@ pipenv run python -m training.generate_dataset `
   --min-depth 1 `
   --max-depth 5 `
   --heuristic current `
+  --tree-learning `
   --output-root data/training
 ```
 
